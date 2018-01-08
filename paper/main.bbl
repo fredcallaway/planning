@@ -1,0 +1,28 @@
+\begin{thebibliography}{}
+
+\bibitem [\protect \citeauthoryear {%
+Newell%
+\ \BBA {} Simon%
+}{%
+Newell%
+\ \BBA {} Simon%
+}{%
+{\protect \APACyear {1972}}%
+}]{%
+NewellSimon1972a}
+\APACinsertmetastar {%
+NewellSimon1972a}%
+\begin{APACrefauthors}%
+Newell, A.%
+\BCBT {}\ \BBA {} Simon, H\BPBI A.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYear{1972}.
+\newblock
+\APACrefbtitle {Human problem solving} {Human problem solving}.
+\newblock
+\APACaddressPublisher{Englewood Cliffs, NJ}{Prentice-Hall}.
+\PrintBackRefs{\CurrentBib}
+
+\end{thebibliography}
