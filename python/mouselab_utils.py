@@ -28,6 +28,12 @@ def make_envs(cost=1.25, n=100, seed=None, variance_structure="constant_high"):
     
     return envs
 
+
+def encode_state(state):
+    return ' '.join('_' if hasattr(x, 'sample') else str(x)
+                    for x in state)
+
+    
 from agents import Agent
 import pandas as pd
 
