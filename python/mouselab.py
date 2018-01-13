@@ -48,6 +48,9 @@ class MouselabEnv(gym.Env):
         self.subtree_slices = self._get_subtree_slices()
         self.reset()
 
+    def __hash__(self):
+        return hash((str(self.tree), self.init, str(self.ground_truth)))
+
     def _reset(self):
         if self.initial_states:
             self.init = random.choice(self.initial_states)
