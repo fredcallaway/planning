@@ -6,7 +6,7 @@ Fred Callaway
 Demonstrates the jsych-mdp plugin
 
 */
-var BLOCKS, DEBUG, DEMO, N_TRIAL, PARAMS, SCORE, STRUCTURE, TRIALS, calculateBonus, condition, counterbalance, createStartButton, getTrials, initializeExperiment, psiturk, saveData;
+var BLOCKS, CONDITION, DEBUG, DEMO, N_TRIAL, PARAMS, SCORE, STRUCTURE, TRIALS, calculateBonus, createStartButton, getTrials, initializeExperiment, psiturk, saveData;
 
 // coffeelint: disable=max_line_length, indentation
 psiturk = new PsiTurk(uniqueId, adServerLoc, mode);
@@ -42,16 +42,14 @@ DEBUG = true;
 
 if (DEBUG) {
   console.log("X X X X X X X X X X X X X X X X X\n X X X X X DEBUG  MODE X X X X X\nX X X X X X X X X X X X X X X X X");
-  condition = 0;
-  counterbalance = 0;
+  CONDITION = 0;
 } else {
   console.log("# =============================== #\n# ========= NORMAL MODE ========= #\n# =============================== #");
 }
 
 if (mode === "{{ mode }}") {
   DEMO = true;
-  condition = 1;
-  counterbalance = 0;
+  CONDITION = 0;
 }
 
 // Globals.
@@ -67,11 +65,11 @@ STRUCTURE = void 0;
 
 N_TRIAL = void 0;
 
+SCORE = 0;
+
 calculateBonus = void 0;
 
 getTrials = void 0;
-
-SCORE = 0;
 
 $(window).on('load', function() {
   var loadTimeout, slowLoad;
@@ -87,11 +85,12 @@ $(window).on('load', function() {
     PARAMS = {
       inspectCost: 1,
       startTime: Date(Date.now()),
-      bonusRate: .001
+      bonusRate: .001,
+      variance: ['constant_high', 'constant_low', 'decreasing', 'increasing'][CONDITION]
     };
     psiturk.recordUnstructuredData('params', PARAMS);
     STRUCTURE = loadJson("static/json/structure.json");
-    TRIALS = loadJson("static/json/trials.json");
+    TRIALS = loadJson(`static/json/${PARAMS.variance}.json`);
     getTrials = (function() {
       var idx, t;
       t = _.shuffle(TRIALS);

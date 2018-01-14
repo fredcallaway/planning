@@ -36,8 +36,7 @@ if DEBUG
    X X X X X DEBUG  MODE X X X X X
   X X X X X X X X X X X X X X X X X
   """
-  condition = 0
-  counterbalance = 0
+  CONDITION = 0
 else
   console.log """
   # =============================== #
@@ -47,8 +46,7 @@ else
 
 if mode is "{{ mode }}"
   DEMO = true
-  condition = 1
-  counterbalance = 0
+  CONDITION = 0
 
 
 # Globals.
@@ -59,9 +57,9 @@ PARAMS = undefined
 TRIALS = undefined
 STRUCTURE = undefined
 N_TRIAL = undefined
+SCORE = 0
 calculateBonus = undefined
 getTrials = undefined
-SCORE = 0
 
 $(window).on 'load', ->
   # Load data and test connection to server.
@@ -80,11 +78,12 @@ $(window).on 'load', ->
       inspectCost: 1
       startTime: Date(Date.now())
       bonusRate: .001
-    
+      variance: ['constant_high', 'constant_low', 'decreasing', 'increasing'][CONDITION]
+
     psiturk.recordUnstructuredData 'params', PARAMS
 
     STRUCTURE = loadJson "static/json/structure.json"
-    TRIALS = loadJson "static/json/trials.json"
+    TRIALS = loadJson "static/json/#{PARAMS.variance}.json"
     getTrials = do ->
       t = _.shuffle TRIALS
       idx = 0
