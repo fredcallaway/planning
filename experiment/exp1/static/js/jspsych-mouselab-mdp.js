@@ -102,7 +102,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
   // =============================== #
   MouselabMDP = class MouselabMDP {
     constructor(config) {
-      var blockName, centerMessage, leftMessage, lowerMessage, prompt, rightMessage;
+      var blockName, centerMessage, leftMessage, lowerMessage, prompt, rightMessage, size;
       this.startTimer = this.startTimer.bind(this);
       // ---------- Responding to user input ---------- #
 
@@ -113,12 +113,6 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       this.getOutcome = this.getOutcome.bind(this);
       this.getReward = this.getReward.bind(this);
       this.move = this.move.bind(this);
-      // clickState: (g, s) =>
-      //   LOG_DEBUG "clickState #{s}"
-      //   s0 = _.last @data.path
-      //   for a, [r, s1] of @graph[s0]
-      //     if "#{s1}" == "#{s}"
-      //       @move s0, 'click', s1
       this.clickState = this.clickState.bind(this);
       this.mouseoverState = this.mouseoverState.bind(this);
       this.mouseoutState = this.mouseoutState.bind(this);
@@ -153,8 +147,9 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       // @transition=null  # function `(s0, a, s1, r) -> null` called after each transition
       
       // leftMessage="Round: #{TRIAL_INDEX}/#{N_TRIAL}"
-      ({display: this.display, graph: this.graph, layout: this.layout, initial: this.initial, stateLabels: this.stateLabels = null, stateDisplay: this.stateDisplay = 'never', stateClickCost: this.stateClickCost = 0, edgeLabels: this.edgeLabels = 'reward', edgeDisplay: this.edgeDisplay = 'always', edgeClickCost: this.edgeClickCost = 0, stateRewards: this.stateRewards = null, clickDelay: this.clickDelay = 0, moveDelay: this.moveDelay = 1000, clickEnergy: this.clickEnergy = 0, moveEnergy: this.moveEnergy = 0, allowSimulation: this.allowSimulation = true, revealRewards: this.revealRewards = true, training: this.training = false, special: this.special = '', timeLimit: this.timeLimit = null, energyLimit: this.energyLimit = null, keys: this.keys = KEYS, trialIndex: this.trialIndex = TRIAL_INDEX, playerImage: this.playerImage = 'static/images/plane.png', SIZE = 100, blockName = 'none', prompt = '&nbsp;', leftMessage = '&nbsp;', centerMessage = '&nbsp;', rightMessage = RIGHT_MESSAGE, lowerMessage = '&nbsp;'} = config); // html display element // defines transition and reward functions // defines position of states // initial state of player // object mapping from state names to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time a state is clicked // object mapping from edge names (s0 + '__' + s1) to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time an edge is clicked // mapping from actions to keycodes // number of trial (starts from 1) // determines the size of states, text, etc...
+      ({display: this.display, graph: this.graph, layout: this.layout, initial: this.initial, stateLabels: this.stateLabels = null, stateDisplay: this.stateDisplay = 'never', stateClickCost: this.stateClickCost = 0, edgeLabels: this.edgeLabels = 'reward', edgeDisplay: this.edgeDisplay = 'always', edgeClickCost: this.edgeClickCost = 0, stateRewards: this.stateRewards = null, clickDelay: this.clickDelay = 0, moveDelay: this.moveDelay = 1000, clickEnergy: this.clickEnergy = 0, moveEnergy: this.moveEnergy = 0, allowSimulation: this.allowSimulation = true, revealRewards: this.revealRewards = true, training: this.training = false, special: this.special = '', timeLimit: this.timeLimit = null, energyLimit: this.energyLimit = null, keys: this.keys = KEYS, trialIndex: this.trialIndex = TRIAL_INDEX, playerImage: this.playerImage = 'static/images/plane.png', size = 80, blockName = 'none', prompt = '&nbsp;', leftMessage = '&nbsp;', centerMessage = '&nbsp;', rightMessage = RIGHT_MESSAGE, lowerMessage = '&nbsp;'} = config); // html display element // defines transition and reward functions // defines position of states // initial state of player // object mapping from state names to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time a state is clicked // object mapping from edge names (s0 + '__' + s1) to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time an edge is clicked // mapping from actions to keycodes // number of trial (starts from 1) // determines the size of states, text, etc...
       LOG_INFO('NAME', this.name);
+      SIZE = size;
       _.extend(this, config);
       checkObj(this);
       if (this.stateLabels === 'reward') {
@@ -275,6 +270,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       this.resetScore();
       this.spendEnergy(0);
       this.freeze = false;
+      this.lowerMessage.css('color', '#000');
     }
 
     startTimer() {
@@ -335,6 +331,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
           this.allowSimulation = false;
           if (this.defaultLowerMessage) {
             this.lowerMessage.html('<b>Move with the arrow keys.</b>');
+            this.lowerMessage.css('color', '#000');
           }
         }
         this.data.actions.push(a);
@@ -391,14 +388,15 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
     }
 
     move(s0, a, s1) {
-      var newTop, notEnoughClicks, r, s1g;
-      notEnoughClicks = (this.special.startsWith('trainClick')) && this.data.queries.click.state.target.length < 3;
-      LOG_INFO('freeze = ', this.freeze);
+      var nClick, newTop, notEnoughClicks, r, s1g;
+      this.moved = true;
       if (this.freeze) {
         LOG_INFO('freeze!');
         this.arrive(s0, 'repeat');
         return;
       }
+      nClick = this.data.queries.click.state.target.length;
+      notEnoughClicks = (this.special.startsWith('trainClick')) && nClick < 3;
       if (notEnoughClicks) {
         this.lowerMessage.html('<b>Inspect at least three nodes before moving!</b>');
         this.lowerMessage.css('color', '#FC4754');
@@ -406,7 +404,6 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
         this.arrive(s0, 'repeat');
         return;
       }
-      console.log('move pass');
       r = this.getReward(s0, a, s1);
       LOG_DEBUG(`move ${s0}, ${s1}, ${r}`);
       s1g = this.states[s1];
@@ -430,7 +427,11 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
     clickState(g, s) {
       var r;
       LOG_INFO(`clickState ${s}`);
-      console.log(g);
+      if (this.moved) {
+        this.lowerMessage.html("<b>You can't use the node inspector after moving!</b>");
+        this.lowerMessage.css('color', '#FC4754');
+        return;
+      }
       if (this.complete || (`${s}` === `${this.initial}`) || this.freeze) {
         return;
       }

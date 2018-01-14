@@ -95,6 +95,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
     constructor: (config) ->
       {
         @display  # html display element
+        
         @graph  # defines transition and reward functions
         @layout  # defines position of states
         @initial  # initial state of player
@@ -123,7 +124,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @keys=KEYS  # mapping from actions to keycodes
         @trialIndex=TRIAL_INDEX  # number of trial (starts from 1)
         @playerImage='static/images/plane.png'
-        SIZE=100  # determines the size of states, text, etc...
+        size=80  # determines the size of states, text, etc...
 
         # leftMessage="Round: #{TRIAL_INDEX}/#{N_TRIAL}"
         blockName='none'
@@ -135,6 +136,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       } = config
 
       LOG_INFO 'NAME', @name
+      SIZE = size
 
       _.extend this, config
       checkObj this
@@ -239,7 +241,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       @resetScore()
       @spendEnergy 0
       @freeze = false
-
+      @lowerMessage.css 'color', '#000'
 
     startTimer: =>
       $timer = $('#mouselab-msg-left')
@@ -295,6 +297,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
           @allowSimulation = false
           if @defaultLowerMessage
             @lowerMessage.html '<b>Move with the arrow keys.</b>'
+            @lowerMessage.css 'color', '#000'
 
 
         @data.actions.push a
@@ -347,23 +350,26 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @graph[s0][a]
 
     move: (s0, a, s1) =>
-      notEnoughClicks = (@special.startsWith 'trainClick') and @data.queries.click.state.target.length < 3
-      LOG_INFO 'freeze = ', @freeze
+      @moved = true
       if @freeze
         LOG_INFO 'freeze!'
         @arrive s0, 'repeat'
         return
+
+      nClick = @data.queries.click.state.target.length
+      notEnoughClicks = (@special.startsWith 'trainClick') and nClick < 3
       if notEnoughClicks
         @lowerMessage.html '<b>Inspect at least three nodes before moving!</b>'
         @lowerMessage.css 'color', '#FC4754'
         @special = 'trainClickBlock'
         @arrive s0, 'repeat'
         return
-      console.log 'move pass'
+
       r = @getReward s0, a, s1
       LOG_DEBUG "move #{s0}, #{s1}, #{r}"
       s1g = @states[s1]
       @freeze = true
+      
       newTop = if @simulationMode then s1g.top - 20 else s1g.top
       @player.animate {left: s1g.left, top: newTop},
         duration: @moveDelay
@@ -374,22 +380,20 @@ jsPsych.plugins['mouselab-mdp'] = do ->
           @spendEnergy @moveEnergy
           @arrive s1
 
-
-
-    # clickState: (g, s) =>
-    #   LOG_DEBUG "clickState #{s}"
-    #   s0 = _.last @data.path
-    #   for a, [r, s1] of @graph[s0]
-    #     if "#{s1}" == "#{s}"
-    #       @move s0, 'click', s1
     clickState: (g, s) =>
       LOG_INFO "clickState #{s}"
-      console.log g
+      if @moved
+        @lowerMessage.html "<b>You can't use the node inspector after moving!</b>"
+        @lowerMessage.css 'color', '#FC4754'
+        return
+              
       if @complete or ("#{s}" is "#{@initial}") or @freeze
         return
+
       if @special is 'trainClickBlock' and @data.queries.click.state.target.length == 2
         @lowerMessage.html '<b>Nice job! You can click on more nodes or start moving.</b>'
         @lowerMessage.css 'color', '#000'
+
       if @stateLabels and @stateDisplay is 'click' and not g.label.text
         @addScore -@stateClickCost
         @recordQuery 'click', 'state', s
@@ -397,11 +401,9 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         r = @stateLabels[s]
         if @clickDelay
           @freeze = true
-
           g.setLabel '...'
           delay @clickDelay, =>
             @freeze = false
-
             g.setLabel r
             @canvas.renderAll()
         else g.setLabel r

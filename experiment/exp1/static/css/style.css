@@ -17,7 +17,7 @@
 
 #mouselab-canvas {
   position: relative;
-  border: thin red solid;
+  /*border: thick black solid;*/
 }
 
 .mouselab-header {
@@ -35,14 +35,6 @@
     // margin-bottom: 0.5em;
     // font-size: 20pt;
 }
-
-// h2 {
-//   color: #2EA5FF
-// }
-
-// strong {
-//   color: #2EA5FF
-// }
 
 #mouselab-msg-left {
   width: 20%;
@@ -95,7 +87,7 @@ img.display {
 
 
 /* Center the loader */
-#loader {
+#load-icon {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -141,7 +133,7 @@ img.display {
   to{ bottom:0; opacity:1 }
 }
 
-#successLoad {
+#success-load {
   display: none;
   text-align: center;
 }

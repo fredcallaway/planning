@@ -6,9 +6,38 @@ Fred Callaway
 Demonstrates the jsych-mdp plugin
 
 */
-var BLOCKS, DEBUG, DEMO, N_TRIAL, PARAMS, SCORE, TRIALS, calculateBonus, condition, counterbalance, createStartButton, delay, initializeExperiment, psiturk;
+var BLOCKS, DEBUG, DEMO, N_TRIAL, PARAMS, SCORE, STRUCTURE, TRIALS, calculateBonus, condition, counterbalance, createStartButton, getTrials, initializeExperiment, psiturk, saveData;
 
 // coffeelint: disable=max_line_length, indentation
+psiturk = new PsiTurk(uniqueId, adServerLoc, mode);
+
+saveData = function() {
+  return new Promise(function(resolve, reject) {
+    var timeout;
+    timeout = delay(10000, function() {
+      return reject('timeout');
+    });
+    return psiturk.saveData({
+      error: function() {
+        clearTimeout(timeout);
+        console.log('Error saving data!');
+        return reject('error');
+      },
+      success: function() {
+        clearTimeout(timeout);
+        console.log('Data saved to psiturk server.');
+        return resolve();
+      }
+    });
+  });
+};
+
+$(window).resize(function() {
+  return checkWindowSize(800, 700, $('#jspsych-target'));
+});
+
+$(window).resize();
+
 DEBUG = true;
 
 if (DEBUG) {
@@ -34,57 +63,61 @@ PARAMS = void 0;
 
 TRIALS = void 0;
 
+STRUCTURE = void 0;
+
 N_TRIAL = void 0;
 
 calculateBonus = void 0;
 
+getTrials = void 0;
+
 SCORE = 0;
 
-// because the order of arguments of setTimeout is awful.
-delay = function(time, func) {
-  return setTimeout(func, time);
-};
-
-// $(window).resize -> checkWindowSize 920, 720, $('#jspsych-target')
-// $(window).resize()
-
-// $(document).ready ->
 $(window).on('load', function() {
   var loadTimeout, slowLoad;
   // Load data and test connection to server.
   slowLoad = function() {
-    return document.getElementById("failLoad").style.display = "block";
+    var ref;
+    return (ref = $('slow-load')) != null ? ref.show() : void 0;
   };
   loadTimeout = delay(12000, slowLoad);
-  psiturk.preloadImages(['static/images/example1.png', 'static/images/example2.png', 'static/images/example3.png', 'static/images/money.png', 'static/images/plane.png', 'static/images/spider.png']);
+  psiturk.preloadImages(['static/images/spider.png']);
   return delay(300, function() {
-    var ERROR, expData;
-    console.log("---------------------------");
     console.log('Loading data');
-    console.log(`static/json/condition_${condition}_${counterbalance}.json`);
-    expData = loadJson(`static/json/condition_${condition}_${counterbalance}.json`);
-    console.log('expData', expData);
-    PARAMS = expData.params;
-    PARAMS.start_time = Date(Date.now());
-    BLOCKS = expData.blocks;
+    PARAMS = {
+      inspectCost: 1,
+      startTime: Date(Date.now()),
+      bonusRate: .001
+    };
     psiturk.recordUnstructuredData('params', PARAMS);
-    if (DEBUG || DEMO) {
-      return createStartButton();
+    STRUCTURE = loadJson("static/json/structure.json");
+    TRIALS = loadJson("static/json/trials.json");
+    getTrials = (function() {
+      var idx, t;
+      t = _.shuffle(TRIALS);
+      idx = 0;
+      return function(n) {
+        idx += n;
+        return t.slice(idx - n, idx);
+      };
+    })();
+    if (DEBUG) {
+      createStartButton();
+      return clearTimeout(loadTimeout);
     } else {
-      // PARAMS.message = true
       console.log('Testing saveData');
-      ERROR = null;
-      return psiturk.saveData({
-        error: function() {
-          console.log('ERROR saving data.');
-          return ERROR = true;
-        },
-        success: function() {
-          console.log('Data saved to psiturk server.');
+      if (DEMO) {
+        clearTimeout(loadTimeout);
+        return delay(500, createStartButton);
+      } else {
+        return saveData().then(function() {
           clearTimeout(loadTimeout);
           return delay(500, createStartButton);
-        }
-      });
+        }).catch(function() {
+          clearTimeout(loadTimeout);
+          return $('#data-error').show();
+        });
+      }
     }
   });
 });
@@ -176,6 +209,7 @@ initializeExperiment = function() {
   MouselabBlock = (function() {
     class MouselabBlock extends Block {
       _init() {
+        _.extend(this, STRUCTURE);
         return this.trialCount = 0;
       }
 
@@ -185,13 +219,11 @@ initializeExperiment = function() {
 
     MouselabBlock.prototype.playerImage = 'static/images/spider.png';
 
-    MouselabBlock.prototype.moveDelay = PARAMS.moveDelay;
-
-    MouselabBlock.prototype.clickDelay = PARAMS.clickDelay;
-
-    MouselabBlock.prototype.moveEnergy = PARAMS.moveEnergy;
-
-    MouselabBlock.prototype.clickEnergy = PARAMS.clickEnergy;
+    // moveDelay: PARAMS.moveDelay
+    // clickDelay: PARAMS.clickDelay
+    // moveEnergy: PARAMS.moveEnergy
+    // clickEnergy: PARAMS.clickEnergy
+    MouselabBlock.prototype.lowerMessage = "Click on the nodes to reveal their values.<br>\nMove with the arrow keys.";
 
     return MouselabBlock;
 
@@ -211,11 +243,6 @@ initializeExperiment = function() {
   //     psiturk.finishInstructions()
   //     psiturk.saveData()
   //     return false
-
-  // fullMessage = """
-  //   Click on the nodes to reveal their values.<br>
-  //   Move with the arrow keys.
-  // """
   fullMessage = "";
   reset_score = new Block({
     type: 'call-function',
@@ -231,13 +258,12 @@ initializeExperiment = function() {
   });
   train_basic = new MouselabBlock({
     blockName: 'train_basic',
-    allowSimulation: false,
     stateDisplay: 'always',
     prompt: function() {
       return markdown("## Web of Cash\n\nIn this HIT, you will play a game called *Web of Cash*. You will guide\na money-loving spider through a spider web. When you land on a gray\ncircle (a ***node***) the value of the node is added to your score.\nYou can move the spider with the arrow keys, but only in the direction\nof the arrows between the nodes. Go ahead, try a few rounds now!");
     },
     lowerMessage: '<b>Move with the arrow keys.</b>',
-    timeline: BLOCKS.train_basic
+    timeline: getTrials(5)
   });
   train_hidden = new MouselabBlock({
     blockName: 'train_hidden',
@@ -247,7 +273,7 @@ initializeExperiment = function() {
       return markdown("## Hidden Information\n\nNice job! When you can see the values of each node, it's not too hard\nto take the best possible path. Unfortunately, you can't always see\nthe value of the nodes. Without this information, it's hard to make\ngood decisions. Try completing a few more rounds.");
     },
     lowerMessage: '<b>Move with the arrow keys.</b>',
-    timeline: BLOCKS.train_hidden
+    timeline: getTrials(5)
   });
   train_ghost = new MouselabBlock({
     blockName: 'train_ghost',
@@ -256,33 +282,32 @@ initializeExperiment = function() {
       return markdown("## Ghost Mode\n\nIt's hard to make good decisions when you can't see what you're\ndoing! Fortunately, you have been equipped with a very handy tool.\nBy pressing `space` you will enter ***Ghost Mode***. While in Ghost Mode\nyour true score won't change, but you'll see how your score *would\nhave* changed if you had visited that node for real.\nAt any point you can press `space` again to return to the realm of the living.\n**Note:** You can only enter Ghost Mode when you are in the first node.");
     },
     lowerMessage: '<b>Press</b> <code>space</code>  <b>to enter ghost mode.</b>',
-    timeline: BLOCKS.train_ghost
+    timeline: getTrials(5)
   });
   train_inspector = new MouselabBlock({
     blockName: 'train_inspector',
     stateDisplay: 'click',
     special: 'trainClick',
     prompt: function() {
-      return markdown("## Node Inspector\n\nIt's hard to make good decision when you can't see what you're\ndoing! Fortunately, you have access to a ***node inspector*** which\ncan reveal the value of a node. To use the node inspector, simply\nclick on a node. Practice using the inspector on **at least three**\nnodes before moving.");
+      return markdown("## Node Inspector\n\nIt's hard to make good decision when you can't see what you're\ndoing! Fortunately, you have access to a ***node inspector*** which\ncan reveal the value of a node. To use the node inspector, simply\nclick on a node. **Note:** you can only use the node inspector when\nyou're on the first node.\n\nPractice using the inspector on **at least three nodes** before moving.");
     },
     // but the node inspector takes some time to work and you can only inspect one node at a time.
-    timeline: BLOCKS.train_ghost,
-    lowerMessage: "<b>Click on the nodes to reveal their values.<b>"
+    timeline: getTrials(5)
   });
+  // lowerMessage: "<b>Click on the nodes to reveal their values.<b>"
   train_inspect_cost = new MouselabBlock({
     blockName: 'train_inspect_cost',
     stateDisplay: 'click',
     // energyLimit: 20
     stateClickCost: PARAMS.inspectCost,
     prompt: function() {
-      return markdown(`## 4. The price of information\n\nSweet! You can use node inspector to gain information and make\nbetter decisions. But, as always, there's a catch. The node inspetor\ncosts $${PARAMS.inspectCost} per node. To maximize your score, you\nhave to know when it's best to gather more infromation, and when\nit's time to act!\n`);
+      return markdown(`## The price of information\n\nYou can use node inspector to gain information and make\nbetter decisions. But, as always, there's a catch. Using the node inspector\ncosts $${PARAMS.inspectCost} per node. To maximize your score, you\nhave to know when it's best to gather more infromation, and when\nit's time to act!\n`);
     },
-    lowerMessage: '<b>Play until you run out of energy.</b>',
-    timeline: BLOCKS.train_ghost
+    timeline: getTrials(5)
   });
   bonus_text = function(long) {
     var s;
-    if (PARAMS.bonus_rate !== .001) {
+    if (PARAMS.bonusRate !== .001) {
       throw new Error('Incorrect bonus rate');
     }
     s = "**you will earn 1 cent for every $10 you make in the game.**";
@@ -299,17 +324,18 @@ initializeExperiment = function() {
       return markdown(`## Earn a Big Bonus\n\nNice! You've learned how to play *Web of Cash*, and you're ready to\nplay it for real. To make things more interesting, you will earn\nreal money based on how well you play the game. Specifically, \n${bonus_text('long')} This is the final\npractice round before your score starts counting towards your bonus.`);
     },
     lowerMessage: fullMessage,
-    timeline: BLOCKS.train_final
+    timeline: getTrials(5)
   });
   train = new Block({
     training: true,
     timeline: [
-      // train_basic
+      train_basic,
       // divider
       // train_hidden
       // divider
-      train_inspector,
-      train_inspect_cost,
+      // train_inspector
+      divider,
+      // train_inspect_cost
       divider,
       train_final,
       new ButtonBlock({
@@ -322,12 +348,12 @@ initializeExperiment = function() {
     ]
   });
   test = new MouselabBlock({
-    blockName: 'test',
-    stateDisplay: 'click',
     // energyLimit: 200
     // timeLimit: PARAMS.timeLimit
+    blockName: 'test',
+    stateDisplay: 'click',
     lowerMessage: fullMessage,
-    timeline: DEBUG ? BLOCKS.test.slice(0, 3) : BLOCKS.test
+    timeline: DEBUG ? getTrials(5) : void 0
   });
   finish = new Block({
     type: 'survey-text',
@@ -337,9 +363,6 @@ initializeExperiment = function() {
     questions: ['Was anything confusing or hard to understand?', 'What was your strategy?', 'Additional coments?'],
     button: 'Submit HIT'
   });
-  // ppl = new Block
-  //   type: 'webppl'
-  //   file: 'static/model.wppl'
   if (DEBUG) {
     experiment_timeline = [train, test, finish];
   } else {
@@ -352,7 +375,7 @@ initializeExperiment = function() {
   // bonus is the total score multiplied by something
   calculateBonus = function() {
     var bonus;
-    bonus = SCORE * PARAMS.bonus_rate;
+    bonus = SCORE * PARAMS.bonusRate;
     bonus = (Math.round(bonus * 100)) / 100; // round to nearest cent
     return bonus;
   };

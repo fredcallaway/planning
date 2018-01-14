@@ -21,6 +21,7 @@ loadJson = function(file) {
   return result.responseJSON;
 };
 
+// because the order of arguments of setTimeout is awful.
 delay = function(time, func) {
   return setTimeout(func, time);
 };

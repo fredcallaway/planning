@@ -7,6 +7,27 @@ Demonstrates the jsych-mdp plugin
 ###
 # coffeelint: disable=max_line_length, indentation
 
+psiturk = new PsiTurk uniqueId, adServerLoc, mode
+
+saveData = ->
+  new Promise (resolve, reject) ->
+    timeout = delay 10000, ->
+      reject('timeout')
+
+    psiturk.saveData
+      error: ->
+        clearTimeout timeout
+        console.log 'Error saving data!'
+        reject('error')
+      success: ->
+        clearTimeout timeout
+        console.log 'Data saved to psiturk server.'
+        resolve()
+
+
+$(window).resize -> checkWindowSize 800, 700, $('#jspsych-target')
+$(window).resize()
+
 
 DEBUG = yes
 if DEBUG
@@ -36,59 +57,58 @@ psiturk = new PsiTurk uniqueId, adServerLoc, mode
 BLOCKS = undefined
 PARAMS = undefined
 TRIALS = undefined
+STRUCTURE = undefined
 N_TRIAL = undefined
 calculateBonus = undefined
+getTrials = undefined
 SCORE = 0
 
-# because the order of arguments of setTimeout is awful.
-delay = (time, func) -> setTimeout func, time
-
-# $(window).resize -> checkWindowSize 920, 720, $('#jspsych-target')
-# $(window).resize()
-
-# $(document).ready ->
 $(window).on 'load', ->
   # Load data and test connection to server.
-  slowLoad = -> document.getElementById("failLoad").style.display = "block"
+  slowLoad = -> $('slow-load')?.show()
   loadTimeout = delay 12000, slowLoad
 
   psiturk.preloadImages [
-    'static/images/example1.png'
-    'static/images/example2.png'
-    'static/images/example3.png'
-    'static/images/money.png'
-    'static/images/plane.png'
     'static/images/spider.png'
   ]
 
 
   delay 300, ->
-    console.log "---------------------------"
     console.log 'Loading data'
-    console.log "static/json/condition_#{condition}_#{counterbalance}.json"
-    expData = loadJson "static/json/condition_#{condition}_#{counterbalance}.json"
-    console.log 'expData', expData
-    PARAMS = expData.params
-
-    PARAMS.start_time = Date(Date.now())
+        
+    PARAMS =
+      inspectCost: 1
+      startTime: Date(Date.now())
+      bonusRate: .001
     
-    BLOCKS = expData.blocks
     psiturk.recordUnstructuredData 'params', PARAMS
 
-    if DEBUG or DEMO
+    STRUCTURE = loadJson "static/json/structure.json"
+    TRIALS = loadJson "static/json/trials.json"
+    getTrials = do ->
+      t = _.shuffle TRIALS
+      idx = 0
+      return (n) ->
+        idx += n
+        t.slice(idx-n, idx)
+
+    if DEBUG
       createStartButton()
-      # PARAMS.message = true
+      clearTimeout loadTimeout
     else
       console.log 'Testing saveData'
-      ERROR = null
-      psiturk.saveData
-        error: ->
-          console.log 'ERROR saving data.'
-          ERROR = true
-        success: ->
-          console.log 'Data saved to psiturk server.'
+      if DEMO
+        clearTimeout loadTimeout
+        delay 500, createStartButton
+      else
+        saveData().then(->
           clearTimeout loadTimeout
           delay 500, createStartButton
+        ).catch(->
+          clearTimeout loadTimeout
+          $('#data-error').show()
+        )
+
 
 
 createStartButton = ->
@@ -151,11 +171,18 @@ initializeExperiment = ->
   class MouselabBlock extends Block
     type: 'mouselab-mdp'
     playerImage: 'static/images/spider.png'
-    moveDelay: PARAMS.moveDelay
-    clickDelay: PARAMS.clickDelay
-    moveEnergy: PARAMS.moveEnergy
-    clickEnergy: PARAMS.clickEnergy
-    _init: -> @trialCount = 0
+    # moveDelay: PARAMS.moveDelay
+    # clickDelay: PARAMS.clickDelay
+    # moveEnergy: PARAMS.moveEnergy
+    # clickEnergy: PARAMS.clickEnergy
+    lowerMessage: """
+      Click on the nodes to reveal their values.<br>
+      Move with the arrow keys.
+    """
+    
+    _init: ->
+      _.extend(this, STRUCTURE)
+      @trialCount = 0
 
 
 
@@ -176,10 +203,6 @@ initializeExperiment = ->
   #     psiturk.saveData()
   #     return false
 
-  # fullMessage = """
-  #   Click on the nodes to reveal their values.<br>
-  #   Move with the arrow keys.
-  # """
   fullMessage = ""
   reset_score = new Block
     type: 'call-function'
@@ -193,7 +216,6 @@ initializeExperiment = ->
 
   train_basic = new MouselabBlock
     blockName: 'train_basic'
-    allowSimulation: false
     stateDisplay: 'always'
     prompt: ->
       markdown """
@@ -206,7 +228,7 @@ initializeExperiment = ->
       of the arrows between the nodes. Go ahead, try a few rounds now!
     """
     lowerMessage: '<b>Move with the arrow keys.</b>'
-    timeline: BLOCKS.train_basic
+    timeline: getTrials 5
 
   
   train_hidden = new MouselabBlock
@@ -223,7 +245,7 @@ initializeExperiment = ->
       good decisions. Try completing a few more rounds.
     """
     lowerMessage: '<b>Move with the arrow keys.</b>'
-    timeline: BLOCKS.train_hidden
+    timeline: getTrials 5
 
   
   train_ghost = new MouselabBlock
@@ -242,7 +264,7 @@ initializeExperiment = ->
       **Note:** You can only enter Ghost Mode when you are in the first node.
     """
     lowerMessage: '<b>Press</b> <code>space</code>  <b>to enter ghost mode.</b>'
-    timeline: BLOCKS.train_ghost
+    timeline: getTrials 5
 
   
   train_inspector = new MouselabBlock
@@ -256,12 +278,14 @@ initializeExperiment = ->
       It's hard to make good decision when you can't see what you're
       doing! Fortunately, you have access to a ***node inspector*** which
       can reveal the value of a node. To use the node inspector, simply
-      click on a node. Practice using the inspector on **at least three**
-      nodes before moving.
+      click on a node. **Note:** you can only use the node inspector when
+      you're on the first node.
+
+      Practice using the inspector on **at least three nodes** before moving.
     """
     # but the node inspector takes some time to work and you can only inspect one node at a time.
-    timeline: BLOCKS.train_ghost
-    lowerMessage: "<b>Click on the nodes to reveal their values.<b>"
+    timeline: getTrials 5
+    # lowerMessage: "<b>Click on the nodes to reveal their values.<b>"
 
 
   train_inspect_cost = new MouselabBlock
@@ -271,21 +295,20 @@ initializeExperiment = ->
     stateClickCost: PARAMS.inspectCost
     prompt: ->
       markdown """
-      ## 4. The price of information
+      ## The price of information
 
-      Sweet! You can use node inspector to gain information and make
-      better decisions. But, as always, there's a catch. The node inspetor
+      You can use node inspector to gain information and make
+      better decisions. But, as always, there's a catch. Using the node inspector
       costs $#{PARAMS.inspectCost} per node. To maximize your score, you
       have to know when it's best to gather more infromation, and when
       it's time to act!
 
     """
-    lowerMessage: '<b>Play until you run out of energy.</b>'
-    timeline: BLOCKS.train_ghost
+    timeline: getTrials 5
 
 
   bonus_text = (long) ->
-    if PARAMS.bonus_rate isnt .001
+    if PARAMS.bonusRate isnt .001
       throw new Error('Incorrect bonus rate')
     s = "**you will earn 1 cent for every $10 you make in the game.**"
     if long
@@ -308,18 +331,19 @@ initializeExperiment = ->
       practice round before your score starts counting towards your bonus.
     """
     lowerMessage: fullMessage
-    timeline: BLOCKS.train_final
+    timeline: getTrials 5
 
 
   train = new Block
     training: true
     timeline: [
-      # train_basic
+      train_basic
       # divider
       # train_hidden
       # divider
-      train_inspector
-      train_inspect_cost
+      # train_inspector
+      divider
+      # train_inspect_cost
       divider
       train_final
       new ButtonBlock
@@ -338,12 +362,12 @@ initializeExperiment = ->
 
 
   test = new MouselabBlock
-    blockName: 'test'
-    stateDisplay: 'click'
     # energyLimit: 200
     # timeLimit: PARAMS.timeLimit
+    blockName: 'test'
+    stateDisplay: 'click'
     lowerMessage: fullMessage
-    timeline: if DEBUG then BLOCKS.test.slice(0, 3) else BLOCKS.test
+    timeline: if DEBUG then getTrials 5
 
 
   finish = new Block
@@ -365,9 +389,6 @@ initializeExperiment = ->
     ]
     button: 'Submit HIT'
 
-  # ppl = new Block
-  #   type: 'webppl'
-  #   file: 'static/model.wppl'
 
   if DEBUG
     experiment_timeline = [
@@ -382,14 +403,13 @@ initializeExperiment = ->
       finish
     ]
 
-
   # ================================================ #
   # ========= START AND END THE EXPERIMENT ========= #
   # ================================================ #
 
   # bonus is the total score multiplied by something
   calculateBonus = ->
-    bonus = SCORE * PARAMS.bonus_rate
+    bonus = SCORE * PARAMS.bonusRate
     bonus = (Math.round (bonus * 100)) / 100  # round to nearest cent
     return bonus
   

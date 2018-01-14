@@ -85,21 +85,27 @@
             Click the button below to begin learning how to play <em>Web of Cash</em>.
             
             <!-- Totally sick loading animation. -->
-            <div id="loader"></div>
+            <div id="load-icon"></div>
 
-            <div style="display:none;" id="successLoad" class="animate-bottom">
+            <div style="display:none;" id="success-load" class="animate-bottom">
                 <br><br><br><br><br>
                 <button id='load-btn' class="btn btn-primary btn-lg">Begin</button>
             </div>
 
-            <div style="display:none;" class="alert alert-warning" id="failLoad">
-                <h3>This is taking a while...</h3>
-                <p>
+            <div style="display:none;" class="alert alert-warning" id="slow-load">
+                <strong>Uhh....</strong>
                 The page is taking longer than usual to load. First try refreshing the page. 
                 If it still doesn't work, there may be a problem with our server, or
                 you may not have a fast enough internet connection to participate
                 in this experiment. In either case, please return the HIT so that
                 someone else can participate. We appreciate it!
+            </div>
+
+            <div style="display:none;" class="alert alert-danger" id="data-error">
+                <strong>Error!</strong>
+                We couldn't contact the database. Try reloading the page. If the
+                problem persists, please return the HIT and report the error to
+                cocosci.turk@gmail.com.
             </div>
         </div>
 

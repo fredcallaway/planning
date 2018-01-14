@@ -10,6 +10,7 @@ loadJson = (file) ->
     async: false
   return result.responseJSON
 
+# because the order of arguments of setTimeout is awful.
 delay = (time, func) -> setTimeout func, time
 
 zip = (rows...) -> rows[0].map((_,c) -> rows.map((row) -> row[c]))
