@@ -1,0 +1,7 @@
+console.log('globalStore', globalStore)
+// console.log('=>', sample(globalStore.reward))
+
+var key = callAsync(globalStore.getKeyboardResponse);
+console.log('key =', key)
+globalStore.display_element.html(JSON.stringify(key))
+// globalStore.show('hello')
