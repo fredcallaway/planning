@@ -6,7 +6,7 @@ Fred Callaway
 Demonstrates the jsych-mdp plugin
 
 */
-var BLOCKS, CONDITION, DEBUG, DEMO, N_TRIAL, PARAMS, SCORE, STRUCTURE, TRIALS, calculateBonus, createStartButton, getTrials, initializeExperiment, psiturk, saveData;
+var BLOCKS, CONDITION, DEBUG, DEMO, N_PER_TRAIN_BLOCK, N_TRIAL, PARAMS, SCORE, STRUCTURE, TRIALS, calculateBonus, createStartButton, getTrials, initializeExperiment, psiturk, saveData;
 
 // coffeelint: disable=max_line_length, indentation
 psiturk = new PsiTurk(uniqueId, adServerLoc, mode);
@@ -68,6 +68,8 @@ N_TRIAL = void 0;
 SCORE = 0;
 
 calculateBonus = void 0;
+
+N_PER_TRAIN_BLOCK = 2;
 
 getTrials = void 0;
 
@@ -262,7 +264,7 @@ initializeExperiment = function() {
       return markdown("## Web of Cash\n\nIn this HIT, you will play a game called *Web of Cash*. You will guide\na money-loving spider through a spider web. When you land on a gray\ncircle (a ***node***) the value of the node is added to your score.\nYou can move the spider with the arrow keys, but only in the direction\nof the arrows between the nodes. Go ahead, try a few rounds now!");
     },
     lowerMessage: '<b>Move with the arrow keys.</b>',
-    timeline: getTrials(5)
+    timeline: getTrials(N_PER_TRAIN_BLOCK)
   });
   train_hidden = new MouselabBlock({
     blockName: 'train_hidden',
@@ -272,7 +274,7 @@ initializeExperiment = function() {
       return markdown("## Hidden Information\n\nNice job! When you can see the values of each node, it's not too hard\nto take the best possible path. Unfortunately, you can't always see\nthe value of the nodes. Without this information, it's hard to make\ngood decisions. Try completing a few more rounds.");
     },
     lowerMessage: '<b>Move with the arrow keys.</b>',
-    timeline: getTrials(5)
+    timeline: getTrials(N_PER_TRAIN_BLOCK)
   });
   train_ghost = new MouselabBlock({
     blockName: 'train_ghost',
@@ -281,7 +283,7 @@ initializeExperiment = function() {
       return markdown("## Ghost Mode\n\nIt's hard to make good decisions when you can't see what you're\ndoing! Fortunately, you have been equipped with a very handy tool.\nBy pressing `space` you will enter ***Ghost Mode***. While in Ghost Mode\nyour true score won't change, but you'll see how your score *would\nhave* changed if you had visited that node for real.\nAt any point you can press `space` again to return to the realm of the living.\n**Note:** You can only enter Ghost Mode when you are in the first node.");
     },
     lowerMessage: '<b>Press</b> <code>space</code>  <b>to enter ghost mode.</b>',
-    timeline: getTrials(5)
+    timeline: getTrials(N_PER_TRAIN_BLOCK)
   });
   train_inspector = new MouselabBlock({
     blockName: 'train_inspector',
@@ -291,7 +293,7 @@ initializeExperiment = function() {
       return markdown("## Node Inspector\n\nIt's hard to make good decision when you can't see what you're\ndoing! Fortunately, you have access to a ***node inspector*** which\ncan reveal the value of a node. To use the node inspector, simply\nclick on a node. **Note:** you can only use the node inspector when\nyou're on the first node.\n\nPractice using the inspector on **at least three nodes** before moving.");
     },
     // but the node inspector takes some time to work and you can only inspect one node at a time.
-    timeline: getTrials(5)
+    timeline: getTrials(N_PER_TRAIN_BLOCK)
   });
   // lowerMessage: "<b>Click on the nodes to reveal their values.<b>"
   train_inspect_cost = new MouselabBlock({
@@ -302,7 +304,7 @@ initializeExperiment = function() {
     prompt: function() {
       return markdown(`## The price of information\n\nYou can use node inspector to gain information and make\nbetter decisions. But, as always, there's a catch. Using the node inspector\ncosts $${PARAMS.inspectCost} per node. To maximize your score, you\nhave to know when it's best to gather more infromation, and when\nit's time to act!\n`);
     },
-    timeline: getTrials(5)
+    timeline: getTrials(N_PER_TRAIN_BLOCK)
   });
   bonus_text = function(long) {
     var s;
@@ -323,18 +325,18 @@ initializeExperiment = function() {
       return markdown(`## Earn a Big Bonus\n\nNice! You've learned how to play *Web of Cash*, and you're ready to\nplay it for real. To make things more interesting, you will earn\nreal money based on how well you play the game. Specifically, \n${bonus_text('long')} This is the final\npractice round before your score starts counting towards your bonus.`);
     },
     lowerMessage: fullMessage,
-    timeline: getTrials(5)
+    timeline: getTrials(N_PER_TRAIN_BLOCK)
   });
   train = new Block({
     training: true,
     timeline: [
       train_basic,
-      // divider
-      // train_hidden
-      // divider
-      // train_inspector
       divider,
-      // train_inspect_cost
+      train_hidden,
+      divider,
+      train_inspector,
+      divider,
+      train_inspect_cost,
       divider,
       train_final,
       new ButtonBlock({

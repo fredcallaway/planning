@@ -19,7 +19,7 @@ SCORE = 0;
 TIME_LEFT = void 0;
 
 jsPsych.plugins['mouselab-mdp'] = (function() {
-  var Arrow, Edge, KEYS, LOG_DEBUG, LOG_INFO, MouselabMDP, NULL, PRINT, RIGHT_MESSAGE, SIZE, State, TRIAL_INDEX, Text, angle, checkObj, dist, plugin, polarMove, redGreen, removePrivate, round;
+  var Arrow, Edge, KEYS, LOG_DEBUG, LOG_INFO, MouselabMDP, NULL, PRINT, RIGHT_MESSAGE, SIZE, State, TOP_ADJUST, TRIAL_INDEX, Text, angle, checkObj, dist, plugin, polarMove, redGreen, removePrivate, round;
   PRINT = function(...args) {
     return console.log(...args);
   };
@@ -31,6 +31,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
   // a scaling parameter, determines size of drawn objects
   SIZE = void 0;
   TRIAL_INDEX = 0;
+  TOP_ADJUST = -16;
   fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
   fabric.Object.prototype.selectable = false;
   fabric.Object.prototype.hoverCursor = 'plain';
@@ -147,7 +148,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       // @transition=null  # function `(s0, a, s1, r) -> null` called after each transition
       
       // leftMessage="Round: #{TRIAL_INDEX}/#{N_TRIAL}"
-      ({display: this.display, graph: this.graph, layout: this.layout, initial: this.initial, stateLabels: this.stateLabels = null, stateDisplay: this.stateDisplay = 'never', stateClickCost: this.stateClickCost = 0, edgeLabels: this.edgeLabels = 'reward', edgeDisplay: this.edgeDisplay = 'always', edgeClickCost: this.edgeClickCost = 0, stateRewards: this.stateRewards = null, clickDelay: this.clickDelay = 0, moveDelay: this.moveDelay = 1000, clickEnergy: this.clickEnergy = 0, moveEnergy: this.moveEnergy = 0, allowSimulation: this.allowSimulation = true, revealRewards: this.revealRewards = true, training: this.training = false, special: this.special = '', timeLimit: this.timeLimit = null, energyLimit: this.energyLimit = null, keys: this.keys = KEYS, trialIndex: this.trialIndex = TRIAL_INDEX, playerImage: this.playerImage = 'static/images/plane.png', size = 80, blockName = 'none', prompt = '&nbsp;', leftMessage = '&nbsp;', centerMessage = '&nbsp;', rightMessage = RIGHT_MESSAGE, lowerMessage = '&nbsp;'} = config); // html display element // defines transition and reward functions // defines position of states // initial state of player // object mapping from state names to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time a state is clicked // object mapping from edge names (s0 + '__' + s1) to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time an edge is clicked // mapping from actions to keycodes // number of trial (starts from 1) // determines the size of states, text, etc...
+      ({display: this.display, graph: this.graph, layout: this.layout, initial: this.initial, stateLabels: this.stateLabels = null, stateDisplay: this.stateDisplay = 'never', stateClickCost: this.stateClickCost = 0, edgeLabels: this.edgeLabels = 'reward', edgeDisplay: this.edgeDisplay = 'always', edgeClickCost: this.edgeClickCost = 0, stateRewards: this.stateRewards = null, clickDelay: this.clickDelay = 0, moveDelay: this.moveDelay = 500, clickEnergy: this.clickEnergy = 0, moveEnergy: this.moveEnergy = 0, allowSimulation: this.allowSimulation = true, revealRewards: this.revealRewards = true, training: this.training = false, special: this.special = '', timeLimit: this.timeLimit = null, energyLimit: this.energyLimit = null, keys: this.keys = KEYS, trialIndex: this.trialIndex = TRIAL_INDEX, playerImage: this.playerImage = 'static/images/plane.png', size = 80, blockName = 'none', prompt = '&nbsp;', leftMessage = '&nbsp;', centerMessage = '&nbsp;', rightMessage = RIGHT_MESSAGE, lowerMessage = '&nbsp;'} = config); // html display element // defines transition and reward functions // defines position of states // initial state of player // object mapping from state names to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time a state is clicked // object mapping from edge names (s0 + '__' + s1) to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time an edge is clicked // mapping from actions to keycodes // number of trial (starts from 1) // determines the size of states, text, etc...
       LOG_INFO('NAME', this.name);
       SIZE = size;
       _.extend(this, config);
@@ -408,7 +409,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       LOG_DEBUG(`move ${s0}, ${s1}, ${r}`);
       s1g = this.states[s1];
       this.freeze = true;
-      newTop = this.simulationMode ? s1g.top - 20 : s1g.top;
+      newTop = this.simulationMode ? s1g.top - 20 : s1g.top + TOP_ADJUST;
       return this.player.animate({
         left: s1g.left,
         top: newTop
@@ -627,9 +628,9 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
     initPlayer(img) {
       var left, top;
       LOG_DEBUG('initPlayer');
-      top = this.states[this.initial].top;
+      top = this.states[this.initial].top + TOP_ADJUST;
       left = this.states[this.initial].left;
-      img.scale(0.3);
+      img.scale(0.25);
       img.set('top', top).set('left', left);
       this.draw(img);
       return this.player = img;

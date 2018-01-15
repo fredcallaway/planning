@@ -22,6 +22,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
   # a scaling parameter, determines size of drawn objects
   SIZE = undefined
   TRIAL_INDEX = 0
+  TOP_ADJUST = -16
 
   fabric.Object::originX = fabric.Object::originY = 'center'
   fabric.Object::selectable = false
@@ -109,7 +110,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @stateRewards=null
 
         @clickDelay=0
-        @moveDelay=1000
+        @moveDelay=500
         @clickEnergy=0
         @moveEnergy=0
 
@@ -370,7 +371,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       s1g = @states[s1]
       @freeze = true
       
-      newTop = if @simulationMode then s1g.top - 20 else s1g.top
+      newTop = if @simulationMode then s1g.top - 20 else s1g.top + TOP_ADJUST
       @player.animate {left: s1g.left, top: newTop},
         duration: @moveDelay
         onChange: @canvas.renderAll.bind(@canvas)
@@ -548,9 +549,9 @@ jsPsych.plugins['mouselab-mdp'] = do ->
     # Draws the player image.
     initPlayer: (img) =>
       LOG_DEBUG 'initPlayer'
-      top = @states[@initial].top
+      top = @states[@initial].top + TOP_ADJUST
       left = @states[@initial].left
-      img.scale(0.3)
+      img.scale(0.25)
       img.set('top', top).set('left', left)
       @draw img
       @player = img

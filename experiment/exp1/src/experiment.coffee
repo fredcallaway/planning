@@ -59,6 +59,7 @@ STRUCTURE = undefined
 N_TRIAL = undefined
 SCORE = 0
 calculateBonus = undefined
+N_PER_TRAIN_BLOCK = 2
 getTrials = undefined
 
 $(window).on 'load', ->
@@ -84,6 +85,7 @@ $(window).on 'load', ->
 
     STRUCTURE = loadJson "static/json/structure.json"
     TRIALS = loadJson "static/json/#{PARAMS.variance}.json"
+
     getTrials = do ->
       t = _.shuffle TRIALS
       idx = 0
@@ -227,7 +229,7 @@ initializeExperiment = ->
       of the arrows between the nodes. Go ahead, try a few rounds now!
     """
     lowerMessage: '<b>Move with the arrow keys.</b>'
-    timeline: getTrials 5
+    timeline: getTrials N_PER_TRAIN_BLOCK
 
   
   train_hidden = new MouselabBlock
@@ -244,7 +246,7 @@ initializeExperiment = ->
       good decisions. Try completing a few more rounds.
     """
     lowerMessage: '<b>Move with the arrow keys.</b>'
-    timeline: getTrials 5
+    timeline: getTrials N_PER_TRAIN_BLOCK
 
   
   train_ghost = new MouselabBlock
@@ -263,7 +265,7 @@ initializeExperiment = ->
       **Note:** You can only enter Ghost Mode when you are in the first node.
     """
     lowerMessage: '<b>Press</b> <code>space</code>  <b>to enter ghost mode.</b>'
-    timeline: getTrials 5
+    timeline: getTrials N_PER_TRAIN_BLOCK
 
   
   train_inspector = new MouselabBlock
@@ -283,7 +285,7 @@ initializeExperiment = ->
       Practice using the inspector on **at least three nodes** before moving.
     """
     # but the node inspector takes some time to work and you can only inspect one node at a time.
-    timeline: getTrials 5
+    timeline: getTrials N_PER_TRAIN_BLOCK
     # lowerMessage: "<b>Click on the nodes to reveal their values.<b>"
 
 
@@ -303,7 +305,7 @@ initializeExperiment = ->
       it's time to act!
 
     """
-    timeline: getTrials 5
+    timeline: getTrials N_PER_TRAIN_BLOCK
 
 
   bonus_text = (long) ->
@@ -330,19 +332,19 @@ initializeExperiment = ->
       practice round before your score starts counting towards your bonus.
     """
     lowerMessage: fullMessage
-    timeline: getTrials 5
+    timeline: getTrials N_PER_TRAIN_BLOCK
 
 
   train = new Block
     training: true
     timeline: [
       train_basic
-      # divider
-      # train_hidden
-      # divider
-      # train_inspector
       divider
-      # train_inspect_cost
+      train_hidden
+      divider
+      train_inspector
+      divider
+      train_inspect_cost
       divider
       train_final
       new ButtonBlock
