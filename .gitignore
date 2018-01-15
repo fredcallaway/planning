@@ -1,4 +1,5 @@
 __pycache__
 .ipynb_checkpoints
-.pyc
+*.pyc
 participants.db
+experiment/exp1/server.log
