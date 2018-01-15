@@ -86,7 +86,7 @@ $(window).on('load', function() {
       inspectCost: 1,
       startTime: Date(Date.now()),
       bonusRate: .001,
-      variance: ['constant_high', 'constant_low', 'decreasing', 'increasing'][CONDITION]
+      variance: ['constant_high', 'constant_low', 'increasing', 'decreasing'][CONDITION]
     };
     psiturk.recordUnstructuredData('params', PARAMS);
     STRUCTURE = loadJson("static/json/structure.json");

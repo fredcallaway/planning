@@ -78,7 +78,7 @@ $(window).on 'load', ->
       inspectCost: 1
       startTime: Date(Date.now())
       bonusRate: .001
-      variance: ['constant_high', 'constant_low', 'decreasing', 'increasing'][CONDITION]
+      variance: ['constant_high', 'constant_low', 'increasing', 'decreasing'][CONDITION]
 
     psiturk.recordUnstructuredData 'params', PARAMS
 
