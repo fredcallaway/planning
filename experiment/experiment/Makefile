@@ -1,5 +1,6 @@
 local:
 	cp templates/exp.html index.html
+	coffee -o static/js -cb src/*
 
 all: 
 	coffee -o static/js -cb src/*
@@ -12,4 +13,4 @@ clean:
 
 demo:
 	cp templates/exp.html index.html
-	rsync -av --delete-after --copy-links . cocosci@cocosci-fred.dreamhosters.com:/home/cocosci/cocosci.dreamhosters.com/webexpt/webofcash-demo
+	rsync -av --delete-after --copy-links . cocosci@cocosci-mcrl.dreamhosters.com:/home/cocosci/cocosci.dreamhosters.com/webexpt/webofcash-demo

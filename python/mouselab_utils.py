@@ -6,7 +6,7 @@ import joblib
 
 ENV_TYPES = ["constant_high", "constant_low", "increasing", "decreasing"]
 
-def make_envs(cost=1.25, n=100, seed=None, variance_structure="constant_high"):
+def make_envs(cost=1.00, n=100, seed=None, variance_structure="constant_high"):
     if seed is not None:
         np.random.seed(seed)
 
@@ -27,6 +27,27 @@ def make_envs(cost=1.25, n=100, seed=None, variance_structure="constant_high"):
             for _ in range(n)]
     
     return envs
+
+
+def make_env(env_type, cost=1., seed=None, **kwargs):
+    if seed is not None:
+        np.random.seed(seed)
+
+    sigmas = get(env_type, {
+        "constant_high": [0,20,20,20],
+        "increasing": [0, 2, 4, 20],
+        "decreasing": [0,20,10,5],
+        "constant_low": [0,1,1,1],
+    })
+    
+    def reward(depth):
+        if depth > 0:
+            return Normal(0, sigmas[depth]).to_discrete(6)
+        return 0.
+    
+    branching = [4,1,2]
+    return MouselabEnv.new_symmetric(branching, reward, cost=cost, **kwargs)
+    
 
 
 def encode_state(state):

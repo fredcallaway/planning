@@ -11,7 +11,7 @@ EXP_PATH = os.path.join("experiment")
 
 def upload(args):
     address = "%s@%s" % (args.user, args.host)
-    root_path = "%s:/home/cocosci/cocosci-fred.dreamhosters.com/" % (address)
+    root_path = "%s:/home/cocosci/cocosci-mcrl.dreamhosters.com/" % (address)
     deploy_path = "%s:%s" % (address, args.dest)
 
     src_paths = [
@@ -45,8 +45,8 @@ def upload(args):
             raise RuntimeError("rsync exited abnormally: %d" % code)
 
     cmd = ("ssh %s "
-           "'rm -f /home/cocosci/cocosci-fred.dreamhosters.com/tmp/restart.txt && "
-           "touch /home/cocosci/cocosci-fred.dreamhosters.com/tmp/restart.txt'" % (
+           "'rm -f /home/cocosci/cocosci-mcrl.dreamhosters.com/tmp/restart.txt && "
+           "touch /home/cocosci/cocosci-mcrl.dreamhosters.com/tmp/restart.txt'" % (
                address))
 
     print(colored(cmd, 'blue'))
@@ -97,7 +97,7 @@ if __name__ == "__main__":
         help="Username to login to the server.")
     parser.add_argument(
         "-H", "--host",
-        default="cocosci-fred.dreamhosters.com",
+        default="cocosci-mcrl.dreamhosters.com",
         help="Hostname of the experiment server.")
     parser.add_argument(
         "-n", "--dry-run",
@@ -112,7 +112,7 @@ if __name__ == "__main__":
         help="Bandwidth limit for transfer")
     parser.add_argument(
         "dest",
-        default="/home/cocosci/cocosci-fred.dreamhosters.com/experiment",
+        default="/home/cocosci/cocosci-mcrl.dreamhosters.com/experiment",
         nargs="?",
         help="Destination path on the experiment server.")
     parser.add_argument(

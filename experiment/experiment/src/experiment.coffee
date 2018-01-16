@@ -1,14 +1,37 @@
-###
-experiment.coffee
-Fred Callaway
-
-Demonstrates the jsych-mdp plugin
-
-###
 # coffeelint: disable=max_line_length, indentation
 
-psiturk = new PsiTurk uniqueId, adServerLoc, mode
+DEBUG = no
+if DEBUG
+  console.log """
+  X X X X X X X X X X X X X X X X X
+   X X X X X DEBUG  MODE X X X X X
+  X X X X X X X X X X X X X X X X X
+  """
+  CONDITION = 0
 
+else
+  console.log """
+  # =============================== #
+  # ========= NORMAL MODE ========= #
+  # =============================== #
+  """
+  console.log '15/01/18 1:00:30 PM'
+  CONDITION = parseInt condition
+
+if mode is "{{ mode }}"
+  DEMO = true
+  CONDITION = 0
+
+BLOCKS = undefined
+PARAMS = undefined
+TRIALS = undefined
+STRUCTURE = undefined
+N_TRIAL = undefined
+SCORE = 0
+calculateBonus = undefined
+getTrials = undefined
+
+psiturk = new PsiTurk uniqueId, adServerLoc, mode
 saveData = ->
   new Promise (resolve, reject) ->
     timeout = delay 10000, ->
@@ -27,41 +50,6 @@ saveData = ->
 
 $(window).resize -> checkWindowSize 800, 700, $('#jspsych-target')
 $(window).resize()
-
-
-DEBUG = yes
-if DEBUG
-  console.log """
-  X X X X X X X X X X X X X X X X X
-   X X X X X DEBUG  MODE X X X X X
-  X X X X X X X X X X X X X X X X X
-  """
-  CONDITION = 0
-else
-  console.log """
-  # =============================== #
-  # ========= NORMAL MODE ========= #
-  # =============================== #
-  """
-
-if mode is "{{ mode }}"
-  DEMO = true
-  CONDITION = 0
-
-
-# Globals.
-psiturk = new PsiTurk uniqueId, adServerLoc, mode
-
-BLOCKS = undefined
-PARAMS = undefined
-TRIALS = undefined
-STRUCTURE = undefined
-N_TRIAL = undefined
-SCORE = 0
-calculateBonus = undefined
-N_PER_TRAIN_BLOCK = 2
-getTrials = undefined
-
 $(window).on 'load', ->
   # Load data and test connection to server.
   slowLoad = -> $('slow-load')?.show()
@@ -85,6 +73,7 @@ $(window).on 'load', ->
 
     STRUCTURE = loadJson "static/json/structure.json"
     TRIALS = loadJson "static/json/#{PARAMS.variance}.json"
+    console.log "loaded #{TRIALS?.length} trials"
 
     getTrials = do ->
       t = _.shuffle TRIALS
@@ -116,9 +105,9 @@ createStartButton = ->
   if DEBUG
     initializeExperiment()
     return
-  document.getElementById("loader").style.display = "none"
-  document.getElementById("successLoad").style.display = "block"
-  document.getElementById("failLoad").style.display = "none"
+  $('#load-icon').hide()
+  $('#slow-load').hide()
+  $('#success-load').show()
   $('#load-btn').click initializeExperiment
 
 
@@ -222,14 +211,14 @@ initializeExperiment = ->
       markdown """
       ## Web of Cash
 
-      In this HIT, you will play a game called *Web of Cash*. You will guide
-      a money-loving spider through a spider web. When you land on a gray
-      circle (a ***node***) the value of the node is added to your score.
-      You can move the spider with the arrow keys, but only in the direction
-      of the arrows between the nodes. Go ahead, try a few rounds now!
+      In this HIT, you will play a game called *Web of Cash*. You will guide a
+      money-loving spider through a spider web. When you land on a gray circle
+      (a ***node***) the value of the node is added to your score. You can
+      move the spider with the arrow keys, but only in the direction of the
+      arrows between the nodes. Go ahead, try a few rounds now!
     """
     lowerMessage: '<b>Move with the arrow keys.</b>'
-    timeline: getTrials N_PER_TRAIN_BLOCK
+    timeline: getTrials 10
 
   
   train_hidden = new MouselabBlock
@@ -240,13 +229,13 @@ initializeExperiment = ->
       markdown """
       ## Hidden Information
 
-      Nice job! When you can see the values of each node, it's not too hard
-      to take the best possible path. Unfortunately, you can't always see
-      the value of the nodes. Without this information, it's hard to make
-      good decisions. Try completing a few more rounds.
+      Nice job! When you can see the values of each node, it's not too hard to
+      take the best possible path. Unfortunately, you can't always see the
+      value of the nodes. Without this information, it's hard to make good
+      decisions. Try completing a few more rounds.
     """
     lowerMessage: '<b>Move with the arrow keys.</b>'
-    timeline: getTrials N_PER_TRAIN_BLOCK
+    timeline: getTrials 5
 
   
   train_ghost = new MouselabBlock
@@ -256,56 +245,55 @@ initializeExperiment = ->
       markdown """
       ## Ghost Mode
 
-      It's hard to make good decisions when you can't see what you're
-      doing! Fortunately, you have been equipped with a very handy tool.
-      By pressing `space` you will enter ***Ghost Mode***. While in Ghost Mode
-      your true score won't change, but you'll see how your score *would
-      have* changed if you had visited that node for real.
-      At any point you can press `space` again to return to the realm of the living.
-      **Note:** You can only enter Ghost Mode when you are in the first node.
+      It's hard to make good decisions when you can't see what you're doing!
+      Fortunately, you have been equipped with a very handy tool. By pressing
+      `space` you will enter ***Ghost Mode***. While in Ghost Mode your true
+      score won't change, but you'll see how your score *would have* changed
+      if you had visited that node for real. At any point you can press
+      `space` again to return to the realm of the living. **Note:** You can
+      only enter Ghost Mode when you are in the first node.
     """
     lowerMessage: '<b>Press</b> <code>space</code>  <b>to enter ghost mode.</b>'
-    timeline: getTrials N_PER_TRAIN_BLOCK
+    timeline: getTrials 5
 
   
   train_inspector = new MouselabBlock
     blockName: 'train_inspector'
-    stateDisplay: 'click'
     special: 'trainClick'
+    stateDisplay: 'click'
+    stateClickCost: 0
     prompt: ->
       markdown """
       ## Node Inspector
 
-      It's hard to make good decision when you can't see what you're
-      doing! Fortunately, you have access to a ***node inspector*** which
-      can reveal the value of a node. To use the node inspector, simply
-      click on a node. **Note:** you can only use the node inspector when
-      you're on the first node.
+      It's hard to make good decision when you can't see what you're doing!
+      Fortunately, you have access to a ***node inspector*** which can reveal
+      the value of a node. To use the node inspector, simply click on a node.
+      **Note:** you can only use the node inspector when you're on the first
+      node.
 
       Practice using the inspector on **at least three nodes** before moving.
     """
     # but the node inspector takes some time to work and you can only inspect one node at a time.
-    timeline: getTrials N_PER_TRAIN_BLOCK
+    timeline: getTrials 5
     # lowerMessage: "<b>Click on the nodes to reveal their values.<b>"
 
 
   train_inspect_cost = new MouselabBlock
     blockName: 'train_inspect_cost'
     stateDisplay: 'click'
-    # energyLimit: 20
     stateClickCost: PARAMS.inspectCost
     prompt: ->
       markdown """
       ## The price of information
 
-      You can use node inspector to gain information and make
-      better decisions. But, as always, there's a catch. Using the node inspector
-      costs $#{PARAMS.inspectCost} per node. To maximize your score, you
-      have to know when it's best to gather more infromation, and when
-      it's time to act!
-
+      You can use node inspector to gain information and make better
+      decisions. But, as always, there's a catch. Using the node inspector
+      costs $#{PARAMS.inspectCost} per node. To maximize your score, you have
+      to know when it's best to gather more information, and when it's time to
+      act!
     """
-    timeline: getTrials N_PER_TRAIN_BLOCK
+    timeline: getTrials 5
 
 
   bonus_text = (long) ->
@@ -313,26 +301,28 @@ initializeExperiment = ->
       throw new Error('Incorrect bonus rate')
     s = "**you will earn 1 cent for every $10 you make in the game.**"
     if long
-      s += " For example, if your final score is $700, you will receive a bonus of **$0.70**."
+      s += " For example, if your final score is $500, you will receive a bonus of **$0.50**."
     return s
 
 
   train_final = new MouselabBlock
     blockName: 'train_final'
     stateDisplay: 'click'
-    # energyLimit: 100
+    stateClickCost: PARAMS.inspectCost
     prompt: ->
       markdown """
       ## Earn a Big Bonus
 
-      Nice! You've learned how to play *Web of Cash*, and you're ready to
-      play it for real. To make things more interesting, you will earn
-      real money based on how well you play the game. Specifically, 
-      #{bonus_text('long')} This is the final
-      practice round before your score starts counting towards your bonus.
+      Nice! You've learned how to play *Web of Cash*, and you're almost ready
+      to play it for real. To make things more interesting, you will earn real
+      money based on how well you play the game. Specifically,
+      #{bonus_text('long')}
+
+      This is the **final practice round** before your score starts counting
+      towards your bonus.
     """
     lowerMessage: fullMessage
-    timeline: getTrials N_PER_TRAIN_BLOCK
+    timeline: getTrials 5
 
 
   train = new Block
@@ -355,20 +345,18 @@ initializeExperiment = ->
           # Training Completed
 
           Well done! You've completed the training phase and you're ready to
-          play *Web of Cash* for real. You will have **#{test.timeline.length} rounds** to make
-          as much money as you can.
-          Remember, #{bonus_text()} Good luck!
+          play *Web of Cash* for real. You will have **#{test.timeline.length}
+          rounds** to make as much money as you can. Remember, #{bonus_text()}
+          Good luck!
         """
     ]
 
 
   test = new MouselabBlock
-    # energyLimit: 200
-    # timeLimit: PARAMS.timeLimit
     blockName: 'test'
     stateDisplay: 'click'
-    lowerMessage: fullMessage
-    timeline: if DEBUG then getTrials 5
+    stateClickCost: PARAMS.inspectCost
+    timeline: getTrials 20
 
 
   finish = new Block
@@ -386,6 +374,7 @@ initializeExperiment = ->
     questions: [
       'Was anything confusing or hard to understand?'
       'What was your strategy?'
+      'What is your age?'
       'Additional coments?'
     ]
     button: 'Submit HIT'
