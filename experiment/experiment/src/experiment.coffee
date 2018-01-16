@@ -15,7 +15,7 @@ else
   # ========= NORMAL MODE ========= #
   # =============================== #
   """
-  console.log '15/01/18 1:00:30 PM'
+  console.log '16/01/18 12:38:03 PM'
   CONDITION = parseInt condition
 
 if mode is "{{ mode }}"
