@@ -8,6 +8,8 @@ loadJson = (file) ->
     dataType: 'json'
     url: file
     async: false
+  if not result.responseJSON?
+    throw new Error "Could not load #{file}"
   return result.responseJSON
 
 # because the order of arguments of setTimeout is awful.

@@ -18,6 +18,9 @@ loadJson = function(file) {
     url: file,
     async: false
   });
+  if (result.responseJSON == null) {
+    throw new Error(`Could not load ${file}`);
+  }
   return result.responseJSON;
 };
 

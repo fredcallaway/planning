@@ -128,6 +128,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         size=80  # determines the size of states, text, etc...
 
         # leftMessage="Round: #{TRIAL_INDEX}/#{N_TRIAL}"
+        trial_id=null
         blockName='none'
         prompt='&nbsp;'
         leftMessage='&nbsp;'
@@ -154,7 +155,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         leftMessage = "Round #{@_block.trialCount + 1}/#{@_block.timeline.length}"
 
       @data =
-        # stim: @stim._json
+        trial_id: trial_id
         block: blockName
         trialIndex: @trialIndex
         score: 0

@@ -1,14 +1,37 @@
-###
-experiment.coffee
-Fred Callaway
-
-Demonstrates the jsych-mdp plugin
-
-###
 # coffeelint: disable=max_line_length, indentation
 
-psiturk = new PsiTurk uniqueId, adServerLoc, mode
+DEBUG = no
+if DEBUG
+  console.log """
+  X X X X X X X X X X X X X X X X X
+   X X X X X DEBUG  MODE X X X X X
+  X X X X X X X X X X X X X X X X X
+  """
+  CONDITION = 0
 
+else
+  console.log """
+  # =============================== #
+  # ========= NORMAL MODE ========= #
+  # =============================== #
+  """
+  console.log '15/01/18 1:00:30 PM'
+  CONDITION = parseInt condition
+
+if mode is "{{ mode }}"
+  DEMO = true
+  CONDITION = 0
+
+BLOCKS = undefined
+PARAMS = undefined
+TRIALS = undefined
+STRUCTURE = undefined
+N_TRIAL = undefined
+SCORE = 0
+calculateBonus = undefined
+getTrials = undefined
+
+psiturk = new PsiTurk uniqueId, adServerLoc, mode
 saveData = ->
   new Promise (resolve, reject) ->
     timeout = delay 10000, ->
@@ -27,43 +50,6 @@ saveData = ->
 
 $(window).resize -> checkWindowSize 800, 700, $('#jspsych-target')
 $(window).resize()
-
-
-DEBUG = yes
-if DEBUG
-  console.log """
-  X X X X X X X X X X X X X X X X X
-   X X X X X DEBUG  MODE X X X X X
-  X X X X X X X X X X X X X X X X X
-  """
-  CONDITION = 0
-else
-  console.log """
-  # =============================== #
-  # ========= NORMAL MODE ========= #
-  # =============================== #
-  """
-
-if mode is "{{ mode }}"
-  DEMO = true
-  CONDITION = 0
-
-
-# Globals.
-psiturk = new PsiTurk uniqueId, adServerLoc, mode
-
-BLOCKS = undefined
-PARAMS = undefined
-TRIALS = undefined
-STRUCTURE = undefined
-N_TRIAL = undefined
-SCORE = 0
-calculateBonus = undefined
-getTrials = undefined
-
-N_PER_TRAIN_BLOCK = 2
-N_TEST = 5
-
 $(window).on 'load', ->
   # Load data and test connection to server.
   slowLoad = -> $('slow-load')?.show()
@@ -80,13 +66,14 @@ $(window).on 'load', ->
     PARAMS =
       inspectCost: 1
       startTime: Date(Date.now())
-      bonusRate: .001
+      bonusRate: .005
       variance: ['constant_high', 'constant_low', 'increasing', 'decreasing'][CONDITION]
 
     psiturk.recordUnstructuredData 'params', PARAMS
 
     STRUCTURE = loadJson "static/json/structure.json"
     TRIALS = loadJson "static/json/#{PARAMS.variance}.json"
+    console.log "loaded #{TRIALS?.length} trials"
 
     getTrials = do ->
       t = _.shuffle TRIALS
@@ -118,9 +105,9 @@ createStartButton = ->
   if DEBUG
     initializeExperiment()
     return
-  document.getElementById("loader").style.display = "none"
-  document.getElementById("successLoad").style.display = "block"
-  document.getElementById("failLoad").style.display = "none"
+  $('#load-icon').hide()
+  $('#slow-load').hide()
+  $('#success-load').show()
   $('#load-btn').click initializeExperiment
 
 
@@ -231,7 +218,7 @@ initializeExperiment = ->
       arrows between the nodes. Go ahead, try a few rounds now!
     """
     lowerMessage: '<b>Move with the arrow keys.</b>'
-    timeline: getTrials N_PER_TRAIN_BLOCK
+    timeline: getTrials 10
 
   
   train_hidden = new MouselabBlock
@@ -248,7 +235,7 @@ initializeExperiment = ->
       decisions. Try completing a few more rounds.
     """
     lowerMessage: '<b>Move with the arrow keys.</b>'
-    timeline: getTrials N_PER_TRAIN_BLOCK
+    timeline: getTrials 5
 
   
   train_ghost = new MouselabBlock
@@ -267,7 +254,7 @@ initializeExperiment = ->
       only enter Ghost Mode when you are in the first node.
     """
     lowerMessage: '<b>Press</b> <code>space</code>  <b>to enter ghost mode.</b>'
-    timeline: getTrials N_PER_TRAIN_BLOCK
+    timeline: getTrials 5
 
   
   train_inspector = new MouselabBlock
@@ -288,7 +275,7 @@ initializeExperiment = ->
       Practice using the inspector on **at least three nodes** before moving.
     """
     # but the node inspector takes some time to work and you can only inspect one node at a time.
-    timeline: getTrials N_PER_TRAIN_BLOCK
+    timeline: getTrials 5
     # lowerMessage: "<b>Click on the nodes to reveal their values.<b>"
 
 
@@ -303,11 +290,10 @@ initializeExperiment = ->
       You can use node inspector to gain information and make better
       decisions. But, as always, there's a catch. Using the node inspector
       costs $#{PARAMS.inspectCost} per node. To maximize your score, you have
-      to know when it's best to gather more infromation, and when it's time to
+      to know when it's best to gather more information, and when it's time to
       act!
-
     """
-    timeline: getTrials N_PER_TRAIN_BLOCK
+    timeline: getTrials 5
 
 
   bonus_text = (long) ->
@@ -315,7 +301,7 @@ initializeExperiment = ->
       throw new Error('Incorrect bonus rate')
     s = "**you will earn 1 cent for every $10 you make in the game.**"
     if long
-      s += " For example, if your final score is $700, you will receive a bonus of **$0.70**."
+      s += " For example, if your final score is $500, you will receive a bonus of **$0.50**."
     return s
 
 
@@ -333,10 +319,10 @@ initializeExperiment = ->
       #{bonus_text('long')}
 
       This is the **final practice round** before your score starts counting
-      towards your bonus. 
+      towards your bonus.
     """
     lowerMessage: fullMessage
-    timeline: getTrials N_PER_TRAIN_BLOCK
+    timeline: getTrials 5
 
 
   train = new Block
@@ -370,7 +356,7 @@ initializeExperiment = ->
     blockName: 'test'
     stateDisplay: 'click'
     stateClickCost: PARAMS.inspectCost
-    timeline: getTrials N_TEST
+    timeline: getTrials 20
 
 
   finish = new Block
