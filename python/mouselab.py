@@ -48,8 +48,10 @@ class MouselabEnv(gym.Env):
         self.subtree_slices = self._get_subtree_slices()
         self.reset()
 
+        self._hash = hash((str(self.tree), self.init, str(list(self.ground_truth))))
+
     def __hash__(self):
-        return hash((str(self.tree), self.init, str(self.ground_truth)))
+        return self._hash
 
     def _reset(self):
         if self.initial_states:
