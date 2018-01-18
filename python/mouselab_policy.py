@@ -30,7 +30,7 @@ class MouselabPolicy(SoftmaxPolicy):
         #     return 1e9 if action == self.env.term_action else -1e9
         return np.dot(self.theta, self.phi(state, action))
 
-    def phi(self, state, action):
+    def phi(self, state, action, compute_all=False):
         env, theta = self.env, self.theta
         x = np.zeros(len(theta))
         if action == env.term_action:
@@ -46,12 +46,12 @@ class MouselabPolicy(SoftmaxPolicy):
                 return x
             # Value of information
             # the `self.theta[i] and` trick skips computing if feature won't be used
-            x[2] = theta[2] and env.myopic_voc(action, state)
-            x[3] = theta[3] and env.vpi_action(action, state)
-            x[4] = theta[4] and env.vpi(state)
+            x[2] = (compute_all or theta[2]) and env.myopic_voc(action, state)
+            x[3] = (compute_all or theta[3]) and env.vpi_action(action, state)
+            x[4] = (compute_all or theta[4]) and env.vpi(state)
 
             # Value of best path through the node (given current knowledge)
-            if any(theta[5:7]):
+            if compute_all or any(theta[5:7]):
                 quality = env.node_quality(action, state)
                 x[5] = quality.expectation()
                 x[6] = quality.std()
