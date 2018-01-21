@@ -148,7 +148,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       // @transition=null  # function `(s0, a, s1, r) -> null` called after each transition
       
       // leftMessage="Round: #{TRIAL_INDEX}/#{N_TRIAL}"
-      ({display: this.display, graph: this.graph, layout: this.layout, initial: this.initial, stateLabels: this.stateLabels = null, stateDisplay: this.stateDisplay = 'never', stateClickCost: this.stateClickCost = 0, edgeLabels: this.edgeLabels = 'reward', edgeDisplay: this.edgeDisplay = 'always', edgeClickCost: this.edgeClickCost = 0, stateRewards: this.stateRewards = null, clickDelay: this.clickDelay = 0, moveDelay: this.moveDelay = 500, clickEnergy: this.clickEnergy = 0, moveEnergy: this.moveEnergy = 0, allowSimulation: this.allowSimulation = true, revealRewards: this.revealRewards = true, training: this.training = false, special: this.special = '', timeLimit: this.timeLimit = null, energyLimit: this.energyLimit = null, keys: this.keys = KEYS, trialIndex: this.trialIndex = TRIAL_INDEX, playerImage: this.playerImage = 'static/images/plane.png', size = 80, trial_id = null, blockName = 'none', prompt = '&nbsp;', leftMessage = '&nbsp;', centerMessage = '&nbsp;', rightMessage = RIGHT_MESSAGE, lowerMessage = '&nbsp;'} = config); // html display element // defines transition and reward functions // defines position of states // initial state of player // object mapping from state names to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time a state is clicked // object mapping from edge names (s0 + '__' + s1) to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time an edge is clicked // mapping from actions to keycodes // number of trial (starts from 1) // determines the size of states, text, etc...
+      ({display: this.display, graph: this.graph, layout: this.layout, initial: this.initial, stateLabels: this.stateLabels = 'reward', stateDisplay: this.stateDisplay = 'never', stateClickCost: this.stateClickCost = 0, edgeLabels: this.edgeLabels = 'never', edgeDisplay: this.edgeDisplay = 'always', edgeClickCost: this.edgeClickCost = 0, stateRewards: this.stateRewards = null, clickDelay: this.clickDelay = 0, moveDelay: this.moveDelay = 500, clickEnergy: this.clickEnergy = 0, moveEnergy: this.moveEnergy = 0, allowSimulation: this.allowSimulation = true, revealRewards: this.revealRewards = true, training: this.training = false, special: this.special = '', timeLimit: this.timeLimit = null, energyLimit: this.energyLimit = null, keys: this.keys = KEYS, trialIndex: this.trialIndex = TRIAL_INDEX, playerImage: this.playerImage = 'static/images/plane.png', size = 80, trial_id = null, blockName = 'none', prompt = '&nbsp;', leftMessage = '&nbsp;', centerMessage = '&nbsp;', rightMessage = RIGHT_MESSAGE, lowerMessage = '&nbsp;'} = config); // html display element // defines transition and reward functions // defines position of states // initial state of player // object mapping from state names to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time a state is clicked // object mapping from edge names (s0 + '__' + s1) to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time an edge is clicked // mapping from actions to keycodes // number of trial (starts from 1) // determines the size of states, text, etc...
       LOG_INFO('NAME', this.name);
       SIZE = size;
       _.extend(this, config);
@@ -637,10 +637,14 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
     }
 
     buildMap() {
-      var a, actions, height, location, r, ref, ref1, results, s, s0, s1, width, x, xs, y, ys;
+      var a, actions, height, location, maxx, maxy, minx, miny, r, ref, ref1, results, s, s0, s1, width, x, xs, y, ys;
       // Resize canvas.
       [xs, ys] = _.unzip(_.values(this.layout));
-      [width, height] = [(_.max(xs)) + 1, (_.max(ys)) + 1];
+      minx = _.min(xs);
+      miny = _.min(ys);
+      maxx = _.max(xs);
+      maxy = _.max(ys);
+      [width, height] = [maxx - minx + 1, maxy - miny + 1];
       this.canvasElement.attr({
         width: width * SIZE,
         height: height * SIZE
@@ -654,7 +658,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       for (s in ref) {
         location = ref[s];
         [x, y] = location;
-        this.states[s] = new State(s, x, y, {
+        this.states[s] = new State(s, x - minx, y - miny, {
           fill: '#bbb',
           label: this.stateDisplay === 'always' ? this.stateLabels[s] : ''
         });

@@ -1,6 +1,6 @@
 # coffeelint: disable=max_line_length, indentation
 
-DEBUG = no
+DEBUG = yes
 if DEBUG
   console.log """
   X X X X X X X X X X X X X X X X X
@@ -71,8 +71,8 @@ $(window).on 'load', ->
 
     psiturk.recordUnstructuredData 'params', PARAMS
 
-    STRUCTURE = loadJson "static/json/structure.json"
-    TRIALS = loadJson "static/json/#{PARAMS.variance}.json"
+    STRUCTURE = loadJson "static/json/binary_structure.json"
+    TRIALS = loadJson "static/json/binary_trees_#{PARAMS.variance}.json"
     console.log "loaded #{TRIALS?.length} trials"
 
     getTrials = do ->

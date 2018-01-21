@@ -101,10 +101,10 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @layout  # defines position of states
         @initial  # initial state of player
 
-        @stateLabels=null  # object mapping from state names to labels
+        @stateLabels='reward'  # object mapping from state names to labels
         @stateDisplay='never'  # one of 'never', 'hover', 'click', 'always'
         @stateClickCost=0  # subtracted from score every time a state is clicked
-        @edgeLabels='reward'  # object mapping from edge names (s0 + '__' + s1) to labels
+        @edgeLabels='never'  # object mapping from edge names (s0 + '__' + s1) to labels
         @edgeDisplay='always'  # one of 'never', 'hover', 'click', 'always'
         @edgeClickCost=0  # subtracted from score every time an edge is clicked
         @stateRewards=null
@@ -561,8 +561,11 @@ jsPsych.plugins['mouselab-mdp'] = do ->
     buildMap: =>
       # Resize canvas.
       [xs, ys] = _.unzip (_.values @layout)
-
-      [width, height] = [(_.max xs) + 1, (_.max ys) + 1]
+      minx = _.min xs
+      miny = _.min ys
+      maxx = _.max xs
+      maxy = _.max ys
+      [width, height] = [maxx - minx + 1, maxy - miny + 1]
 
       @canvasElement.attr(width: width * SIZE, height: height * SIZE)
       @canvas = new fabric.Canvas 'mouselab-canvas', selection: false
@@ -571,7 +574,8 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       @states = {}
       for s, location of (removePrivate @layout)
         [x, y] = location
-        @states[s] = new State s, x, y,
+
+        @states[s] = new State s, x - minx, y - miny,
           fill: '#bbb'
           label: if @stateDisplay is 'always' then @stateLabels[s] else ''
 

@@ -29,6 +29,7 @@ def move_xy(x, y, direction, dist=1):
 
 def dist(branch, depth):
     """Distance between nodes at a given depth of a tree with given branching factor."""
+    return 1
     if branch == 3:
         return 2 ** (depth - 1)
     else:

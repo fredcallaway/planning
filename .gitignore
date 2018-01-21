@@ -4,3 +4,4 @@ __pycache__
 participants.db
 experiment/exp1/server.log
 experiment/data/human_raw/
+experiment/experiment/server.log
