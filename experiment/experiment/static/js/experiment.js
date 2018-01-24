@@ -344,7 +344,7 @@ initializeExperiment = function() {
     },
     type: 'survey-multi-choice',
     questions: ["What was the range of node values?"],
-    options: [['$0 to $10', '-$5 to $5', '-$9 to 15', '-$30 to $30']]
+    options: [['$0 to $10', '-$5 to $5', '-$12 to 12', '-$30 to $30']]
   });
   test = new MouselabBlock({
     blockName: 'test',
