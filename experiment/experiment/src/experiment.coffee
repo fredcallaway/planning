@@ -1,6 +1,6 @@
 # coffeelint: disable=max_line_length, indentation
 
-DEBUG = yes
+DEBUG = no
 if DEBUG
   console.log """
   X X X X X X X X X X X X X X X X X
@@ -351,12 +351,41 @@ initializeExperiment = ->
         """
     ]
 
+  quiz = new Block
+    preamble: -> markdown """
+      # Quiz
+    """
+    type: 'survey-multi-choice'
+    questions: [
+      "What was the range of node values?"
+    ]
+    options: [
+      ['$0 to $10', '-$5 to $5', '-$9 to 15', '-$30 to $30']
+    ]
+
 
   test = new MouselabBlock
     blockName: 'test'
     stateDisplay: 'click'
     stateClickCost: PARAMS.inspectCost
     timeline: getTrials 20
+    
+  verbal_responses = new Block
+    type: 'survey-text'
+    preamble: -> markdown """
+        # Please answer these questions
+
+      """
+
+    questions: [
+        'How did you decide when to stop clicking?'
+        'How did you decide where to click?'
+        'How did you decide where NOT to click?'
+        'Where were you most likely to click at the beginning of each trial?'
+        'Can you describe your strategy?'
+        'How much money did it cost to click on a node?'
+    ]
+    button: 'Finish'
 
 
   finish = new Block
@@ -373,7 +402,6 @@ initializeExperiment = ->
 
     questions: [
       'Was anything confusing or hard to understand?'
-      'What was your strategy?'
       'What is your age?'
       'Additional coments?'
     ]
@@ -382,14 +410,18 @@ initializeExperiment = ->
 
   if DEBUG
     experiment_timeline = [
-      train
-      test
+      #train
+      quiz
+      #test
+      verbal_responses
       finish
     ]
   else
     experiment_timeline = [
       train
+      quiz
       test
+      verbal_responses
       finish
     ]
 
