@@ -102,59 +102,6 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
     simulate: 'space'
   }, jsPsych.pluginAPI.convertKeyCharacterToKeyCode);
   RIGHT_MESSAGE = '\xa0'.repeat(8) + 'Score: <span id=mouselab-score/>';
-<<<<<<< HEAD
-  // =============================== #
-  // ========= MouselabMDP ========= #
-  // =============================== #
-  MouselabMDP = class MouselabMDP {
-    constructor(config) {
-      var blockName, centerMessage, leftMessage, lowerMessage, prompt, rightMessage, size, trial_id;
-      this.startTimer = this.startTimer.bind(this);
-      // ---------- Responding to user input ---------- #
-
-      // Called when a valid action is initiated via a key press.
-      this.handleKey = this.handleKey.bind(this);
-      this.startSimulationMode = this.startSimulationMode.bind(this);
-      this.endSimulationMode = this.endSimulationMode.bind(this);
-      this.getOutcome = this.getOutcome.bind(this);
-      this.getReward = this.getReward.bind(this);
-      this.move = this.move.bind(this);
-      this.clickState = this.clickState.bind(this);
-      this.mouseoverState = this.mouseoverState.bind(this);
-      this.mouseoutState = this.mouseoutState.bind(this);
-      this.clickEdge = this.clickEdge.bind(this);
-      this.mouseoverEdge = this.mouseoverEdge.bind(this);
-      this.mouseoutEdge = this.mouseoutEdge.bind(this);
-      this.getEdgeLabel = this.getEdgeLabel.bind(this);
-      this.recordQuery = this.recordQuery.bind(this);
-      // ---------- Updating state ---------- #
-
-      // Called when the player arrives in a new state.
-      this.arrive = this.arrive.bind(this);
-      this.addScore = this.addScore.bind(this);
-      this.resetScore = this.resetScore.bind(this);
-      this.drawScore = this.drawScore.bind(this);
-      this.spendEnergy = this.spendEnergy.bind(this);
-      // $('#mouselab-').css 'color', redGreen SCORE
-
-      // ---------- Starting the trial ---------- #
-      this.run = this.run.bind(this);
-      // Draw object on the canvas.
-      this.draw = this.draw.bind(this);
-      // Draws the player image.
-      this.initPlayer = this.initPlayer.bind(this);
-      // Constructs the visual display.
-      this.buildMap = this.buildMap.bind(this);
-      // ---------- ENDING THE TRIAL ---------- #
-
-      // Creates a button allowing user to move to the next trial.
-      this.endTrial = this.endTrial.bind(this);
-      this.checkFinished = this.checkFinished.bind(this);
-      // @transition=null  # function `(s0, a, s1, r) -> null` called after each transition
-      
-      // leftMessage="Round: #{TRIAL_INDEX}/#{N_TRIAL}"
-      ({display: this.display, graph: this.graph, layout: this.layout, initial: this.initial, stateLabels: this.stateLabels = 'reward', stateDisplay: this.stateDisplay = 'never', stateClickCost: this.stateClickCost = 0, edgeLabels: this.edgeLabels = 'never', edgeDisplay: this.edgeDisplay = 'always', edgeClickCost: this.edgeClickCost = 0, stateRewards: this.stateRewards = null, clickDelay: this.clickDelay = 0, moveDelay: this.moveDelay = 500, clickEnergy: this.clickEnergy = 0, moveEnergy: this.moveEnergy = 0, allowSimulation: this.allowSimulation = false, revealRewards: this.revealRewards = true, training: this.training = false, special: this.special = '', timeLimit: this.timeLimit = null, energyLimit: this.energyLimit = null, keys: this.keys = KEYS, trialIndex: this.trialIndex = TRIAL_INDEX, playerImage: this.playerImage = 'static/images/plane.png', size = 80, trial_id = null, blockName = 'none', prompt = '&nbsp;', leftMessage = '&nbsp;', centerMessage = '&nbsp;', rightMessage = RIGHT_MESSAGE, lowerMessage = '&nbsp;'} = config); // html display element // defines transition and reward functions // defines position of states // initial state of player // object mapping from state names to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time a state is clicked // object mapping from edge names (s0 + '__' + s1) to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time an edge is clicked // mapping from actions to keycodes // number of trial (starts from 1) // determines the size of states, text, etc...
-=======
   MouselabMDP = (function() {
     function MouselabMDP(config) {
       this.checkFinished = bind(this.checkFinished, this);
@@ -184,8 +131,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       this.handleKey = bind(this.handleKey, this);
       this.startTimer = bind(this.startTimer, this);
       var blockName, centerMessage, leftMessage, lowerMessage, prompt, ref, ref1, ref10, ref11, ref12, ref13, ref14, ref15, ref16, ref17, ref18, ref19, ref2, ref20, ref21, ref22, ref23, ref24, ref25, ref26, ref27, ref3, ref4, ref5, ref6, ref7, ref8, ref9, rightMessage, size, trial_id;
-      this.display = config.display, this.graph = config.graph, this.layout = config.layout, this.initial = config.initial, this.stateLabels = (ref = config.stateLabels) != null ? ref : 'reward', this.stateDisplay = (ref1 = config.stateDisplay) != null ? ref1 : 'never', this.stateClickCost = (ref2 = config.stateClickCost) != null ? ref2 : 0, this.edgeLabels = (ref3 = config.edgeLabels) != null ? ref3 : 'never', this.edgeDisplay = (ref4 = config.edgeDisplay) != null ? ref4 : 'always', this.edgeClickCost = (ref5 = config.edgeClickCost) != null ? ref5 : 0, this.stateRewards = (ref6 = config.stateRewards) != null ? ref6 : null, this.clickDelay = (ref7 = config.clickDelay) != null ? ref7 : 0, this.moveDelay = (ref8 = config.moveDelay) != null ? ref8 : 500, this.clickEnergy = (ref9 = config.clickEnergy) != null ? ref9 : 0, this.moveEnergy = (ref10 = config.moveEnergy) != null ? ref10 : 0, this.allowSimulation = (ref11 = config.allowSimulation) != null ? ref11 : true, this.revealRewards = (ref12 = config.revealRewards) != null ? ref12 : true, this.training = (ref13 = config.training) != null ? ref13 : false, this.special = (ref14 = config.special) != null ? ref14 : '', this.timeLimit = (ref15 = config.timeLimit) != null ? ref15 : null, this.energyLimit = (ref16 = config.energyLimit) != null ? ref16 : null, this.keys = (ref17 = config.keys) != null ? ref17 : KEYS, this.trialIndex = (ref18 = config.trialIndex) != null ? ref18 : TRIAL_INDEX, this.playerImage = (ref19 = config.playerImage) != null ? ref19 : 'static/images/plane.png', size = (ref20 = config.size) != null ? ref20 : 80, trial_id = (ref21 = config.trial_id) != null ? ref21 : null, blockName = (ref22 = config.blockName) != null ? ref22 : 'none', prompt = (ref23 = config.prompt) != null ? ref23 : '&nbsp;', leftMessage = (ref24 = config.leftMessage) != null ? ref24 : '&nbsp;', centerMessage = (ref25 = config.centerMessage) != null ? ref25 : '&nbsp;', rightMessage = (ref26 = config.rightMessage) != null ? ref26 : RIGHT_MESSAGE, lowerMessage = (ref27 = config.lowerMessage) != null ? ref27 : '&nbsp;';
->>>>>>> 89c4631e18a3661fb2a497a47ba915d7318153b9
+      this.display = config.display, this.graph = config.graph, this.layout = config.layout, this.initial = config.initial, this.stateLabels = (ref = config.stateLabels) != null ? ref : 'reward', this.stateDisplay = (ref1 = config.stateDisplay) != null ? ref1 : 'never', this.stateClickCost = (ref2 = config.stateClickCost) != null ? ref2 : 0, this.edgeLabels = (ref3 = config.edgeLabels) != null ? ref3 : 'never', this.edgeDisplay = (ref4 = config.edgeDisplay) != null ? ref4 : 'always', this.edgeClickCost = (ref5 = config.edgeClickCost) != null ? ref5 : 0, this.stateRewards = (ref6 = config.stateRewards) != null ? ref6 : null, this.clickDelay = (ref7 = config.clickDelay) != null ? ref7 : 0, this.moveDelay = (ref8 = config.moveDelay) != null ? ref8 : 500, this.clickEnergy = (ref9 = config.clickEnergy) != null ? ref9 : 0, this.moveEnergy = (ref10 = config.moveEnergy) != null ? ref10 : 0, this.allowSimulation = (ref11 = config.allowSimulation) != null ? ref11 : false, this.revealRewards = (ref12 = config.revealRewards) != null ? ref12 : true, this.training = (ref13 = config.training) != null ? ref13 : false, this.special = (ref14 = config.special) != null ? ref14 : '', this.timeLimit = (ref15 = config.timeLimit) != null ? ref15 : null, this.energyLimit = (ref16 = config.energyLimit) != null ? ref16 : null, this.keys = (ref17 = config.keys) != null ? ref17 : KEYS, this.trialIndex = (ref18 = config.trialIndex) != null ? ref18 : TRIAL_INDEX, this.playerImage = (ref19 = config.playerImage) != null ? ref19 : 'static/images/plane.png', size = (ref20 = config.size) != null ? ref20 : 80, trial_id = (ref21 = config.trial_id) != null ? ref21 : null, blockName = (ref22 = config.blockName) != null ? ref22 : 'none', prompt = (ref23 = config.prompt) != null ? ref23 : '&nbsp;', leftMessage = (ref24 = config.leftMessage) != null ? ref24 : '&nbsp;', centerMessage = (ref25 = config.centerMessage) != null ? ref25 : '&nbsp;', rightMessage = (ref26 = config.rightMessage) != null ? ref26 : RIGHT_MESSAGE, lowerMessage = (ref27 = config.lowerMessage) != null ? ref27 : '&nbsp;';
       LOG_INFO('NAME', this.name);
       SIZE = size;
       _.extend(this, config);
