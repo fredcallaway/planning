@@ -9,6 +9,7 @@ from skopt import gp_minimize
 from joblib import Parallel, delayed, dump, load
 from toolz.curried import partition_all, concat, get
 from tqdm import tqdm
+from evaluation import evaluate, get_util
 
 def lc_policy(x, normalize_voi=True):
     x = np.array(x, dtype=float)
@@ -31,8 +32,6 @@ BOUNDS = [
     (0., 1.),       # vpi_full
 ]
 
-TRIALS = pd.read_json('../experiment/experiment/static/json/constant_high.json'
-                      ).set_index('trial_id').stateRewards
 
 def empirical_clicks(version):
     import sys
@@ -46,11 +45,22 @@ def empirical_clicks(version):
     
     return zip(tdf.trial_id, tdf.queries.apply(extract))
 
-CLICKS = load('data/empirical_clicks.pkl')
-CHUNKS = list(partition_all(5, CLICKS))
+def empirical_state_actions(version):
+    import sys
+    sys.path.append('../experiment/lib')
+    from analysis_utils import get_data
+
+    data = get_data(version, '../experiment/data')
+    tdf = data['mouselab-mdp'].query('block == "test"')
+    def extract(q):
+        return list(map(int, q['click']['state']['target']))
+    
+    return zip(tdf.trial_id, tdf.queries.apply(extract))
+
+
 COST = 1.0
 N_CALL = 50
-N_JOB = 24
+N_JOB = 22
 
 
 def yoked_rollout(pol, trial_id, clicks, n=1):
@@ -68,12 +78,11 @@ def yoked_rollout(pol, trial_id, clicks, n=1):
             q = r + sum(run_episode(pol, env)['rewards'])
             yield {'s': s, 'a': click, 'q': q}
 
-
 # ---------- Policy Optimization ---------- #
 
 def chunk_sum_returns(x, chunk_i):
     pol = lc_policy(x)
-    chunk = CHUNKS[chunk_i]
+    chunk = CLICK_CHUNKS[chunk_i]
     steps = concat(yoked_rollout(pol, *args) for args in chunk)
     return sum(map(get('q'), steps))
 
@@ -86,7 +95,7 @@ def write_policy(env_type, seed):
     with Parallel(N_JOB) as parallel, tqdm(total=N_CALL, desc=name) as pbar:
         def loss(x):
             util = sum(parallel(delayed(chunk_sum_returns)(x, i) 
-                                for i in range(len(CHUNKS))))
+                                for i in range(len(CLICK_CHUNKS))))
             pbar.update()
             nonlocal best
             best = max(best, util)
@@ -107,7 +116,7 @@ def chunk_write_rollouts(env_type, seed, chunk_i):
     polfile = f'data/policies/{env_type}_{seed}.pkl'
     pol = load(polfile)
     env = make_env('constant_high', cost=COST)
-    chunk = CHUNKS[chunk_i]
+    chunk = CLICK_CHUNKS[chunk_i]
     n = 0
 
     for i, (trial_id, clicks) in enumerate(chunk):
@@ -135,23 +144,74 @@ def write_rollouts(env_type, seed):
     assert env_type == 'constant_high'
 
     jobs = [delayed(chunk_write_rollouts)(env_type, seed, chunk_i)
-            for chunk_i in range(len(CHUNKS))]
+            for chunk_i in range(len(CLICK_CHUNKS))]
     n = sum(Parallel(N_JOB)(tqdm(jobs, desc=name)))
     print(f'{n} rollouts')
 
 
-def main():
-    os.makedirs('data/policies', exist_ok=True)
-    os.makedirs('data/gp_results', exist_ok=True)
-    os.makedirs('data/rollouts', exist_ok=True)
-    # write_policy(ENV_TYPES[0], 1)
-    write_rollouts(ENV_TYPES[0], 1)
+# ---------- Experimental Environment Returns ---------- #
+
+def chunk_simulate(env_type, seed, chunk_i):
+    name = f'{env_type}_{seed}'
+    os.makedirs(f'data/exp_sim/{name}', exist_ok=True)
+    polfile = f'data/policies/{name}.pkl'
+    pol = load(polfile)
+    chunk = TRIAL_ID_CHUNKS[chunk_i]
+
+    def simulate(trial_id):
+        env = make_env('constant_high', cost=COST, ground_truth=TRIALS[trial_id])
+        df = evaluate(pol, [env] * 30)
+        df['trial_id'] = trial_id
+        return df
+    
+    pd.concat(map(simulate, chunk)).to_pickle(f'data/exp_sim/{name}/{chunk_i}.pkl')
+
+def simulate_experiment(env_type='constant_high', seed=1):
+    jobs = (delayed(chunk_simulate)(env_type, seed, i)
+            for i in range(len(TRIAL_ID_CHUNKS)))
+    Parallel(N_JOB)(tqdm(jobs, total=len(TRIALS)))
 
 
-    # jobs = [delayed(write_policy)(et, seed)
-    #                 for et in ENV_TYPES
-    #                 for seed in range(1,5)]
-    # results = Parallel(n_jobs=16)(jobs)
+# ---------- Experimental Qs ---------- #
+
+def chunk_exp_Q(env_type, seed, chunk_i):
+    name = f'{env_type}_{seed}'
+    os.makedirs(f'data/exp_Q/{name}', exist_ok=True)
+    polfile = f'data/policies/{name}.pkl'
+    pol = load(polfile)
+    chunk = STATE_CHUNKS[chunk_i]
+    env = make_env('constant_high', cost=COST, term_belief=True, ground_truth=False)
+
+    def Q(state):
+        for action in env.actions(state):
+            if action == env.term_action:
+                q = env.expected_term_reward(state)
+            else:
+                samples = []
+                for _ in range(100):
+                    env._state = state
+                    env.init, r, *_ = env.step(action)
+                    samples.append(r + sum(run_episode(pol, env)['rewards']))
+                q = np.mean(samples)
+            yield {'state': state, 'action': action, 'q': q}
+                    
+    pd.DataFrame(list(concat(map(Q, chunk)))).to_pickle(f'data/exp_Q/{name}/{chunk_i}.pkl')
+
+def exp_Q(env_type='constant_high', seed=1):
+    jobs = (delayed(chunk_exp_Q)(env_type, seed, i)
+            for i in range(len(STATE_CHUNKS)))
+    Parallel(N_JOB)(tqdm(jobs, total=len(STATE_CHUNKS)))
+
+
 
 if __name__ == '__main__':
-    main()
+    # TRIALS = pd.read_json('../experiment/experiment/static/json/constant_high.json'
+    #                       ).set_index('trial_id').stateRewards
+    # TRIAL_ID_CHUNKS = list(partition_all(25, TRIALS.index))
+
+    # CLICKS = load('data/empirical_clicks.pkl')
+    # CLICK_CHUNKS = list(partition_all(5, CLICKS))
+
+    STATES = load('data/human_states/c0.2.pkl')
+    STATE_CHUNKS = list(partition_all(25, STATES))
+    exp_Q()

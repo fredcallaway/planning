@@ -141,7 +141,7 @@ class Layouts:
 
 def main():
     import json
-    struct = Layouts.tree2([2, 2, 1], first='left')
+    struct = Layouts.tree2([2, 2], first='left')
     with open('experiment/static/json/binary_structure.json', 'w+') as f:
         json.dump(struct, f)
 
