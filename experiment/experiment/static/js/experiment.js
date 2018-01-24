@@ -2,7 +2,7 @@
 // coffeelint: disable=max_line_length, indentation
 var BLOCKS, CONDITION, DEBUG, DEMO, N_TRIAL, PARAMS, SCORE, STRUCTURE, TRIALS, calculateBonus, createStartButton, getTrials, initializeExperiment, psiturk, saveData;
 
-DEBUG = true;
+DEBUG = false;
 
 if (DEBUG) {
   console.log("X X X X X X X X X X X X X X X X X\n X X X X X DEBUG  MODE X X X X X\nX X X X X X X X X X X X X X X X X");
@@ -58,7 +58,7 @@ saveData = function() {
 };
 
 $(window).resize(function() {
-  return checkWindowSize(800, 700, $('#jspsych-target'));
+  return checkWindowSize(800, 600, $('#jspsych-target'));
 });
 
 $(window).resize();
@@ -77,12 +77,12 @@ $(window).on('load', function() {
     PARAMS = {
       inspectCost: 1,
       startTime: Date(Date.now()),
-      bonusRate: .001,
+      bonusRate: .01,
       variance: ['constant_high', 'constant_low', 'increasing', 'decreasing'][CONDITION]
     };
     psiturk.recordUnstructuredData('params', PARAMS);
     STRUCTURE = loadJson("static/json/binary_structure.json");
-    TRIALS = loadJson(`static/json/binary_trees_${PARAMS.variance}.json`);
+    TRIALS = loadJson(`static/json/binary_tree_${PARAMS.variance}.json`);
     console.log(`loaded ${(TRIALS != null ? TRIALS.length : void 0)} trials`);
     getTrials = (function() {
       var idx, t;
@@ -259,7 +259,6 @@ initializeExperiment = function() {
   });
   train_hidden = new MouselabBlock({
     blockName: 'train_hidden',
-    allowSimulation: false,
     stateDisplay: 'never',
     prompt: function() {
       return markdown("## Hidden Information\n\nNice job! When you can see the values of each node, it's not too hard to\ntake the best possible path. Unfortunately, you can't always see the\nvalue of the nodes. Without this information, it's hard to make good\ndecisions. Try completing a few more rounds.");
@@ -299,12 +298,11 @@ initializeExperiment = function() {
   });
   bonus_text = function(long) {
     var s;
-    if (PARAMS.bonusRate !== .001) {
-      throw new Error('Incorrect bonus rate');
-    }
-    s = "**you will earn 1 cent for every $10 you make in the game.**";
+    // if PARAMS.bonusRate isnt .01
+    //   throw new Error('Incorrect bonus rate')
+    s = "**you will earn 1 cent for every $1 you make in the game.**";
     if (long) {
-      s += " For example, if your final score is $500, you will receive a bonus of **$0.50**.";
+      s += " For example, if your final score is $50, you will receive a bonus of **$0.50**.";
     }
     return s;
   };
@@ -328,13 +326,14 @@ initializeExperiment = function() {
       train_inspector,
       divider,
       train_inspect_cost,
+      // TODO: reward distribution attention check
       divider,
       train_final,
       new ButtonBlock({
         stimulus: function() {
           SCORE = 0;
           psiturk.finishInstructions();
-          return markdown(`# Training Completed\n\nWell done! You've completed the training phase and you're ready to\nplay *Web of Cash* for real. You will have **${test.timeline.length}\nrounds** to make as much money as you can. Remember, ${bonus_text()}\nGood luck!`);
+          return markdown(`# Training Completed\n\nWell done! You've completed the training phase and you're ready to\nplay *Web of Cash* for real. You will have **${test.timeline.length}\nrounds** to make as much money as you can. Remember, ${bonus_text()}\n\nGood luck!`);
         }
       })
     ]
@@ -343,8 +342,9 @@ initializeExperiment = function() {
     blockName: 'test',
     stateDisplay: 'click',
     stateClickCost: PARAMS.inspectCost,
-    timeline: getTrials(20)
+    timeline: getTrials(30)
   });
+  // TODO: ask about the cost of clicking
   finish = new Block({
     type: 'survey-text',
     preamble: function() {
@@ -354,7 +354,8 @@ initializeExperiment = function() {
     button: 'Submit HIT'
   });
   if (DEBUG) {
-    experiment_timeline = [train, test, finish];
+    // train
+    experiment_timeline = [test, finish];
   } else {
     experiment_timeline = [train, test, finish];
   }

@@ -114,7 +114,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @clickEnergy=0
         @moveEnergy=0
 
-        @allowSimulation=true
+        @allowSimulation=false
         @revealRewards=true
         @training=false
         @special=''

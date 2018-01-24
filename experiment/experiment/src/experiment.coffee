@@ -1,6 +1,6 @@
 # coffeelint: disable=max_line_length, indentation
 
-DEBUG = yes
+DEBUG = no
 if DEBUG
   console.log """
   X X X X X X X X X X X X X X X X X
@@ -48,7 +48,7 @@ saveData = ->
         resolve()
 
 
-$(window).resize -> checkWindowSize 800, 700, $('#jspsych-target')
+$(window).resize -> checkWindowSize 800, 600, $('#jspsych-target')
 $(window).resize()
 $(window).on 'load', ->
   # Load data and test connection to server.
@@ -66,13 +66,13 @@ $(window).on 'load', ->
     PARAMS =
       inspectCost: 1
       startTime: Date(Date.now())
-      bonusRate: .001
+      bonusRate: .01
       variance: ['constant_high', 'constant_low', 'increasing', 'decreasing'][CONDITION]
 
     psiturk.recordUnstructuredData 'params', PARAMS
 
     STRUCTURE = loadJson "static/json/binary_structure.json"
-    TRIALS = loadJson "static/json/binary_trees_#{PARAMS.variance}.json"
+    TRIALS = loadJson "static/json/binary_tree_#{PARAMS.variance}.json"
     console.log "loaded #{TRIALS?.length} trials"
 
     getTrials = do ->
@@ -223,7 +223,6 @@ initializeExperiment = ->
   
   train_hidden = new MouselabBlock
     blockName: 'train_hidden'
-    allowSimulation: false
     stateDisplay: 'never'
     prompt: ->
       markdown """
@@ -297,11 +296,11 @@ initializeExperiment = ->
 
 
   bonus_text = (long) ->
-    if PARAMS.bonusRate isnt .001
-      throw new Error('Incorrect bonus rate')
-    s = "**you will earn 1 cent for every $10 you make in the game.**"
+    # if PARAMS.bonusRate isnt .01
+    #   throw new Error('Incorrect bonus rate')
+    s = "**you will earn 1 cent for every $1 you make in the game.**"
     if long
-      s += " For example, if your final score is $500, you will receive a bonus of **$0.50**."
+      s += " For example, if your final score is $50, you will receive a bonus of **$0.50**."
     return s
 
 
@@ -335,6 +334,7 @@ initializeExperiment = ->
       train_inspector
       divider
       train_inspect_cost
+      # TODO: reward distribution attention check
       divider
       train_final
       new ButtonBlock
@@ -347,6 +347,7 @@ initializeExperiment = ->
           Well done! You've completed the training phase and you're ready to
           play *Web of Cash* for real. You will have **#{test.timeline.length}
           rounds** to make as much money as you can. Remember, #{bonus_text()}
+          
           Good luck!
         """
     ]
@@ -356,9 +357,10 @@ initializeExperiment = ->
     blockName: 'test'
     stateDisplay: 'click'
     stateClickCost: PARAMS.inspectCost
-    timeline: getTrials 20
+    timeline: getTrials 30
 
 
+  # TODO: ask about the cost of clicking
   finish = new Block
     type: 'survey-text'
     preamble: -> markdown """
@@ -382,7 +384,7 @@ initializeExperiment = ->
 
   if DEBUG
     experiment_timeline = [
-      train
+      # train
       test
       finish
     ]
