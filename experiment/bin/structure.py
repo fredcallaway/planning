@@ -6,6 +6,10 @@ DIRECTIONS = ('up', 'right', 'down', 'left')
 ACTIONS = dict(zip(DIRECTIONS, it.count()))
 
 BRANCH_DIRS = {
+    1: {'up': ['up'],
+        'right': ['right'],
+        'down': ['down'],
+        'left': ['left'],},
     2: {'up': ('right', 'left'),
         'right': ('up', 'down'),
         'down': ('right', 'left'),
@@ -101,12 +105,45 @@ class Layouts:
             'graph': graph,
         }
 
+    def tree2(branching, first='up', **kwargs):
+        graph = {}
+        layout = {}
+        names = it.count()
+
+        def node(d, x, y, prev_dir):
+            print('node', d, x, y)
+
+            name = str(next(names))
+            layout[name] = (x, y)
+            graph[name] = {}
+            try:
+                branch = branching[d]
+            except IndexError:
+                pass
+            else:
+                for direction in BRANCH_DIRS[branch][prev_dir]:
+                    x1, y1 = move_xy(x, y, direction, dist(branch, d))
+                    s1 = node(d+1, x1, y1, direction)
+                    if s1 is not None:
+                        graph[name][direction] = (0, s1)
+                                            
+            return name
+
+        node(0, 0, 0, first)
+        return {
+            'layout': layout,
+            'initial': '0',
+            'graph': graph,
+        }
+
+
 
 
 def main():
     import json
+    struct = Layouts.tree2([2, 2, 1], first='left')
     with open('experiment/static/json/binary_structure.json', 'w+') as f:
-        json.dump(Layouts.tree(2, 2), f)
+        json.dump(struct, f)
 
 if __name__ == '__main__':
     main()
