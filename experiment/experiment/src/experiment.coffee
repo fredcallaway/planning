@@ -386,7 +386,7 @@ initializeExperiment = ->
         'How did you decide where to click??'
         'How did you decide where NOT to click?'
         'How did you decide when to stop clicking?'
-        'Where were you most likely to click at the beginning of each trial?'
+        'Where were you most likely to click at the beginning of each round?'
         'Can you describe anything else about your strategy?'
     ]
     button: 'Finish'
