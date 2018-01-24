@@ -66,10 +66,16 @@ class SoftmaxPolicy(Policy):
         return np.random.choice(len(probs), p=probs)
 
     def action_distribution(self, state):
-        q = np.zeros(self.n_action) - 1e9
+        q = np.zeros(self.n_action) - 1e30
         for a in self.env.actions(state):
             q[a] = self.preference(state, a)
         return softmax(q, self.temp)
+
+    def preferences(self, state):
+        q = np.zeros(self.n_action) - 1e30
+        for a in self.env.actions(state):
+            q[a] = self.preference(state, a)
+        return q
 
 
 class RandomTreePolicy(Policy):
