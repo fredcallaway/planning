@@ -5,3 +5,11 @@ participants.db
 experiment/exp1/server.log
 experiment/data/human_raw/
 experiment/experiment/server.log
+experiment/.archive/
+python/data/exp_Q/
+python/data/human_states/
+python/data/policies/
+python/data/rollouts/
+python/fred-trees.ipynb
+python/fred_analyze_human.ipynb
+python/old_optimal.ipynb
