@@ -358,9 +358,13 @@ initializeExperiment = ->
     type: 'survey-multi-choice'
     questions: [
       "What was the range of node values?"
+      "What is the cost of clicking?"
+      "How much REAL money do you earn?"
     ]
     options: [
       ['$0 to $10', '-$5 to $5', '-$12 to 12', '-$30 to $30']
+      ['$0','$1','$2','$3']
+      ['1 cent for every $100 you make in the game','1 cent for every $10 you make in the game','1 dollar for every $10 you make in the game']
     ]
 
 
@@ -383,7 +387,6 @@ initializeExperiment = ->
         'How did you decide where NOT to click?'
         'Where were you most likely to click at the beginning of each trial?'
         'Can you describe your strategy?'
-        'How much money did it cost to click on a node?'
     ]
     button: 'Finish'
 

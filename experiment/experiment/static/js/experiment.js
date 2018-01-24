@@ -327,8 +327,8 @@ initializeExperiment = function() {
       return markdown("# Quiz");
     },
     type: 'survey-multi-choice',
-    questions: ["What was the range of node values?"],
-    options: [['$0 to $10', '-$5 to $5', '-$12 to 12', '-$30 to $30']]
+    questions: ["What was the range of node values?", "What is the cost of clicking?", "How much REAL money do you earn?"],
+    options: [['$0 to $10', '-$5 to $5', '-$12 to 12', '-$30 to $30'], ['$0', '$1', '$2', '$3'], ['1 cent for every $100 you make in the game', '1 cent for every $10 you make in the game', '1 dollar for every $10 you make in the game']]
   });
   test = new MouselabBlock({
     blockName: 'test',
@@ -341,7 +341,7 @@ initializeExperiment = function() {
     preamble: function() {
       return markdown("# Please answer these questions\n");
     },
-    questions: ['How did you decide when to stop clicking?', 'How did you decide where to click?', 'How did you decide where NOT to click?', 'Where were you most likely to click at the beginning of each trial?', 'Can you describe your strategy?', 'How much money did it cost to click on a node?'],
+    questions: ['How did you decide when to stop clicking?', 'How did you decide where to click?', 'How did you decide where NOT to click?', 'Where were you most likely to click at the beginning of each trial?', 'Can you describe your strategy?'],
     button: 'Finish'
   });
   finish = new Block({
