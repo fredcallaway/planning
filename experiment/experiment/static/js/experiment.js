@@ -126,7 +126,7 @@ createStartButton = function() {
 };
 
 initializeExperiment = function() {
-  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, experiment_timeline, finish, fullMessage, img, prompt_resubmit, reprompt, reset_score, save_data, test, text, train, train_basic, train_final, train_ghost, train_hidden, train_inspect_cost, train_inspector;
+  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, experiment_timeline, finish, fullMessage, img, prompt_resubmit, quiz, reprompt, reset_score, save_data, test, text, train, train_basic, train_final, train_ghost, train_hidden, train_inspect_cost, train_inspector;
   $('#jspsych-target').html('');
   console.log('INITIALIZE EXPERIMENT');
   //  ======================== #
@@ -338,6 +338,14 @@ initializeExperiment = function() {
       })
     ]
   });
+  quiz = new Block({
+    preamble: function() {
+      return markdown("# Quiz");
+    },
+    type: 'survey-multi-choice',
+    questions: ["What was the range of node values?"],
+    options: [['$0 to $10', '-$5 to $5', '-$9 to 15', '-$30 to $30']]
+  });
   test = new MouselabBlock({
     blockName: 'test',
     stateDisplay: 'click',
@@ -350,14 +358,19 @@ initializeExperiment = function() {
     preamble: function() {
       return markdown(`# You've completed the HIT\n\nThanks for participating. We hope you had fun! Based on your\nperformance, you will be awarded a bonus of\n**$${calculateBonus().toFixed(2)}**.\n\nPlease briefly answer the questions below before you submit the HIT.`);
     },
-    questions: ['Was anything confusing or hard to understand?', 'What was your strategy?', 'What is your age?', 'Additional coments?'],
+    questions: ['Was anything confusing or hard to understand?', 'What is your age?', 'Additional coments?'],
     button: 'Submit HIT'
   });
   if (DEBUG) {
-    // train
-    experiment_timeline = [test, finish];
+    experiment_timeline = [
+      //train
+      quiz,
+      //test
+      verbal_responses,
+      finish
+    ];
   } else {
-    experiment_timeline = [train, test, finish];
+    experiment_timeline = [train, quiz, test, verbal_responses, finish];
   }
   // ================================================ #
   // ========= START AND END THE EXPERIMENT ========= #
