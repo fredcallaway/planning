@@ -355,6 +355,8 @@ initializeExperiment = ->
   quiz = new Block
     preamble: -> markdown """
       # Quiz
+
+      **MAKE SURE THE RANGES ARE CORRECT**
     """
     type: 'survey-multi-choice'
     questions: [
@@ -365,7 +367,9 @@ initializeExperiment = ->
     options: [
       ['$0 to $10', '-$5 to $5', '-$12 to 12', '-$30 to $30']
       ['$0','$1','$2','$3']
-      ['1 cent for every $100 you make in the game','1 cent for every $10 you make in the game','1 dollar for every $10 you make in the game']
+      ['1 cent for every $100 you make in the game',
+       '1 cent for every $10 you make in the game',
+       '1 dollar for every $10 you make in the game']
     ]
 
 
