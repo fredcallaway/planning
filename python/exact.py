@@ -29,12 +29,6 @@ def hash_tree(env, state):
     if state == '__term_state__':
         return hash(state)
 
-    # h = compose(hash, str)
-    # s = [hash(x) + 100000 for x in state]
-    # return h(s[0] + h(s[1] + h(s[2]) +  h(s[3])) + h(s[4] + h(s[5]) +  h(s[6])))
-    # s = [hash(x) + 100000 for x in state]
-    # return ((s[2] + s[3]) ^ s[1]  +  (s[5] + s[6]) ^ s[4]) ^ s[0]
-
     def rec(n):
         x = hash(state[n])
         childs =  sum(rec(c) for c in env.tree[n])
@@ -44,11 +38,12 @@ def hash_tree(env, state):
 
 def solve(env, hash_state=None, actions=None, blinkered=None):
     """Returns Q, V, pi, and computation data for an mdp environment."""
-    if hasattr(env, 'n_arm'):
-        hash_state = lambda state: tuple(sorted(state))
-    elif hasattr(env, 'tree'):
-        # hash_state = lambda state: sort_tree(env, state)
-        hash_state = lambda state: hash_tree(env, state)
+    if hash_state is None:
+        if hasattr(env, 'n_arm'):
+            hash_state = lambda state: tuple(sorted(state))
+        elif hasattr(env, 'tree'):
+            # hash_state = lambda state: sort_tree(env, state)
+            hash_state = lambda state: hash_tree(env, state)
     if actions is None:
         actions = env.actions
     if blinkered == 'recursive':

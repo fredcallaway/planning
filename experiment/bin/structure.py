@@ -111,8 +111,6 @@ class Layouts:
         names = it.count()
 
         def node(d, x, y, prev_dir):
-            print('node', d, x, y)
-
             name = str(next(names))
             layout[name] = (x, y)
             graph[name] = {}
@@ -141,8 +139,8 @@ class Layouts:
 
 def main():
     import json
-    struct = Layouts.tree2([2, 2], first='left')
-    with open('experiment/static/json/binary_structure.json', 'w+') as f:
+    struct = Layouts.tree2([3,1,2], first='up')
+    with open('experiment/static/json/structure/312.json', 'w+') as f:
         json.dump(struct, f)
 
 if __name__ == '__main__':

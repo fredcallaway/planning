@@ -1,6 +1,6 @@
 # coffeelint: disable=max_line_length, indentation
 
-DEBUG = no
+DEBUG = yes
 if DEBUG
   console.log """
   X X X X X X X X X X X X X X X X X
@@ -68,11 +68,12 @@ $(window).on 'load', ->
       startTime: Date(Date.now())
       bonusRate: .01
       variance: ['constant_high', 'constant_low', 'increasing', 'decreasing'][CONDITION]
+      branching: '312'
 
     psiturk.recordUnstructuredData 'params', PARAMS
 
-    STRUCTURE = loadJson "static/json/binary_structure.json"
-    TRIALS = loadJson "static/json/binary_tree_#{PARAMS.variance}.json"
+    STRUCTURE = loadJson "static/json/structure/#{PARAMS.branching}.json"
+    TRIALS = loadJson "static/json/rewards/#{PARAMS.branching}.json"
     console.log "loaded #{TRIALS?.length} trials"
 
     getTrials = do ->
@@ -418,9 +419,9 @@ initializeExperiment = ->
 
   if DEBUG
     experiment_timeline = [
-      #train
-      quiz
-      #test
+      train
+      # quiz
+      test
       verbal_responses
       finish
     ]

@@ -2,7 +2,7 @@
 // coffeelint: disable=max_line_length, indentation
 var BLOCKS, CONDITION, DEBUG, DEMO, N_TRIAL, PARAMS, SCORE, STRUCTURE, TRIALS, calculateBonus, createStartButton, getTrials, initializeExperiment, psiturk, saveData;
 
-DEBUG = false;
+DEBUG = true;
 
 if (DEBUG) {
   console.log("X X X X X X X X X X X X X X X X X\n X X X X X DEBUG  MODE X X X X X\nX X X X X X X X X X X X X X X X X");
@@ -78,11 +78,12 @@ $(window).on('load', function() {
       inspectCost: 1,
       startTime: Date(Date.now()),
       bonusRate: .01,
-      variance: ['constant_high', 'constant_low', 'increasing', 'decreasing'][CONDITION]
+      variance: ['constant_high', 'constant_low', 'increasing', 'decreasing'][CONDITION],
+      branching: '312'
     };
     psiturk.recordUnstructuredData('params', PARAMS);
-    STRUCTURE = loadJson("static/json/binary_structure.json");
-    TRIALS = loadJson(`static/json/binary_tree_${PARAMS.variance}.json`);
+    STRUCTURE = loadJson(`static/json/structure/${PARAMS.branching}.json`);
+    TRIALS = loadJson(`static/json/rewards/${PARAMS.branching}.json`);
     console.log(`loaded ${(TRIALS != null ? TRIALS.length : void 0)} trials`);
     getTrials = (function() {
       var idx, t;
@@ -340,7 +341,7 @@ initializeExperiment = function() {
   });
   quiz = new Block({
     preamble: function() {
-      return markdown("# Quiz");
+      return markdown("# Quiz\n\n**MAKE SURE THE RANGES ARE CORRECT**");
     },
     type: 'survey-multi-choice',
     questions: ["What was the range of node values?", "What is the cost of clicking?", "How much REAL money do you earn?"],
@@ -371,9 +372,9 @@ initializeExperiment = function() {
   });
   if (DEBUG) {
     experiment_timeline = [
-      //train
-      quiz,
-      //test
+      train,
+      // quiz
+      test,
       verbal_responses,
       finish
     ];
