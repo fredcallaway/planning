@@ -1,0 +1,9 @@
+bonus,bonusRate,branching,completed,inspectCost,pid,startTime,variance,version
+0.51,0.01,312,True,1,0,Thu Jan 25 2018 16:19:36 GMT-0500 (Eastern Standard Time),constant_high,c0.6
+-0.3,0.01,312,True,1,1,Thu Jan 25 2018 15:18:23 GMT-0600 (CST),constant_high,c0.6
+0.47,0.01,312,True,1,2,Thu Jan 25 2018 15:15:21 GMT-0600 (Central Standard Time),constant_high,c0.6
+1.36,0.01,312,True,1,3,Thu Jan 25 2018 16:22:27 GMT-0500 (Eastern Standard Time),constant_high,c0.6
+1.17,0.01,312,True,1,4,Thu Jan 25 2018 13:46:38 GMT-0800 (Pacific Standard Time),constant_high,c0.6
+1.62,0.01,312,True,1,5,Thu Jan 25 2018 13:24:14 GMT-0800 (Pacific Standard Time),constant_high,c0.6
+0.05,0.01,312,True,1,6,Thu Jan 25 2018 13:42:25 GMT-0800 (Pacific Standard Time),constant_high,c0.6
+1.64,0.01,312,True,1,7,Thu Jan 25 2018 14:14:12 GMT-0700 (MST),constant_high,c0.6
