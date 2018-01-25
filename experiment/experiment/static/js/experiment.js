@@ -126,7 +126,7 @@ createStartButton = function() {
 };
 
 initializeExperiment = function() {
-  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, experiment_timeline, finish, fullMessage, img, prompt_resubmit, quiz, reprompt, reset_score, save_data, test, text, train, train_basic, train_final, train_ghost, train_hidden, train_inspect_cost, train_inspector;
+  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, experiment_timeline, finish, fullMessage, img, prompt_resubmit, quiz, reprompt, reset_score, save_data, test, text, train, train_basic, train_final, train_ghost, train_hidden, train_inspect_cost, train_inspector, verbal_responses;
   $('#jspsych-target').html('');
   console.log('INITIALIZE EXPERIMENT');
   //  ======================== #
@@ -350,7 +350,6 @@ initializeExperiment = function() {
     blockName: 'test',
     stateDisplay: 'click',
     stateClickCost: PARAMS.inspectCost,
-<<<<<<< HEAD
     timeline: getTrials(20)
   });
   verbal_responses = new Block({
@@ -358,11 +357,8 @@ initializeExperiment = function() {
     preamble: function() {
       return markdown("# Please answer these questions\n");
     },
-    questions: ['How did you decide when to stop clicking?', 'How did you decide where to click?', 'How did you decide where NOT to click?', 'Where were you most likely to click at the beginning of each trial?', 'Can you describe your strategy?'],
+    questions: ['How did you decide where to click??', 'How did you decide where NOT to click?', 'How did you decide when to stop clicking?', 'Where were you most likely to click at the beginning of each trial?', 'Can you describe anything else about your strategy?'],
     button: 'Finish'
-=======
-    timeline: getTrials(30)
->>>>>>> 3d56809a24185c426dbdf1ab9d34c161e01e6dc0
   });
   // TODO: ask about the cost of clicking
   finish = new Block({

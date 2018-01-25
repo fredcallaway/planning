@@ -23,17 +23,24 @@ class MouselabEnv(gym.Env):
     metadata = {'render.modes': ['human', 'array']}
     term_state = '__term_state__'
 
-    def __init__(self, tree, init, ground_truth=None, cost=0, sample_term_reward=False):
+    def __init__(self, tree, init, ground_truth=None, cost=0, term_belief=True, sample_term_reward=False):
         self.tree = tree
         self.init = (0, *init[1:])
-        if ground_truth is not None:
+        
+        if ground_truth is False:
+            self.ground_truth = ()
+        elif ground_truth is not None:
             if len(ground_truth) != len(init):
+                print(ground_truth)
+                print(init)
                 raise ValueError('len(ground_truth) != len(init)')
             self.ground_truth = np.array(ground_truth)
+            self.ground_truth[0] = 0.
         else:
             self.ground_truth = np.array(list(map(sample, init)))
-        self.ground_truth[0] = 0.
+            self.ground_truth[0] = 0.
         self.cost = - abs(cost)
+        self.term_belief = term_belief
         self.sample_term_reward = sample_term_reward
         self.term_action = len(self.init)
 
@@ -77,6 +84,9 @@ class MouselabEnv(gym.Env):
         return self._state, reward, done, {}
 
     def _term_reward(self):
+        if self.term_belief:
+            return self.expected_term_reward(self._state)
+
         returns = [self.ground_truth[list(path)].sum() 
                    for path in self.optimal_paths()]
         if self.sample_term_reward:
@@ -84,12 +94,11 @@ class MouselabEnv(gym.Env):
         else:
             return np.mean(returns)
 
-
     def _observe(self, action):
-        if self.ground_truth is not None:
-            result = self.ground_truth[action]
-        else:
+        if self.ground_truth is ():
             result = self._state[action].sample()
+        else:
+            result = self.ground_truth[action]
         s = list(self._state)
         s[action] = result
         return tuple(s)
@@ -254,12 +263,12 @@ class MouselabEnv(gym.Env):
         assert False
 
     @lru_cache(None) 
-    def leaves(self, node):
-        trees = [self.subtree[n1] for n1 in self.tree[0]]
-        for t in trees:
-            if node in t:
-                return tuple(t)
-        assert False
+    def leaves(self):
+        return [path[-1] for path in self.all_paths()]
+
+    def path_values(self, state):
+        return [self.node_quality(node, state) 
+                for node in self.leaves()]
 
     def node_value_after_observe(self, obs, node, state):
         """A distribution over the expected value of node, after making an observation.
@@ -290,6 +299,7 @@ class MouselabEnv(gym.Env):
                 path.append(child)
         assert False
 
+    @memoize
     def all_paths(self, start=0):
         def rec(path):
             children = self.tree[path[-1]]
@@ -299,7 +309,7 @@ class MouselabEnv(gym.Env):
             else:
                 yield path
 
-        return rec([start])
+        return list(rec([start]))
 
     def _get_subtree_slices(self):
         slices = [0] * len(self.tree)

@@ -373,7 +373,6 @@ initializeExperiment = ->
     blockName: 'test'
     stateDisplay: 'click'
     stateClickCost: PARAMS.inspectCost
-<<<<<<< HEAD
     timeline: getTrials 20
     
   verbal_responses = new Block
@@ -384,17 +383,13 @@ initializeExperiment = ->
       """
 
     questions: [
-        'How did you decide when to stop clicking?'
-        'How did you decide where to click?'
+        'How did you decide where to click??'
         'How did you decide where NOT to click?'
-        'Where were you most likely to click at the beginning of each trial?'
-        'Can you describe your strategy?'
+        'How did you decide when to stop clicking?'
+        'Where were you most likely to click at the beginning of each round?'
+        'Can you describe anything else about your strategy?'
     ]
     button: 'Finish'
-=======
-    timeline: getTrials 30
->>>>>>> 3d56809a24185c426dbdf1ab9d34c161e01e6dc0
-
 
   # TODO: ask about the cost of clicking
   finish = new Block

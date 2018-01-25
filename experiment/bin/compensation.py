@@ -4,7 +4,7 @@ import os
 class Compensator(object):
     """Tools for compensating MTurk workers."""
     def __init__(self, use_sandbox=False, stdout_log=False, verbose=1,
-                 verify_mturk_ssl=True, aws_key=None, aws_secret_key=None, ):
+                 verify_mturk_ssl=True, aws_key=None, aws_secret_key=None):
 
         self.verbose = verbose
         if aws_key is None:
@@ -67,28 +67,27 @@ class Compensator(object):
             self._log(1, 'Error approving {}'.format(assignment_id))
             return r
 
-    def grant_bonus(self, worker_id, assignment_id, bonus, repeat=False):
+    def grant_bonus(self, worker_id, assignment_id, bonus, reason='Performance bonus', repeat=False):
         """Grant a bonus for an assignment.
 
         If repeat is False, no action will be taken if assignment has 
         already been bonused. Returns response only if there if an error.
         """
         if not repeat:
-            previous = self.request('GetBonusPayments',
-                                    AssignmentId=assignment_id)
-            if int(previous.lookup('NumResults')) > 0:
+            if self.get_bonus(assignment_id):
                 self._log(2, 'Skipping previously bonused worker {}'.format(worker_id))
                 return
         r = self.request('GrantBonus',
                          WorkerId=worker_id,
                          AssignmentId=assignment_id,
                          BonusAmount={'Amount': bonus, 'CurrencyCode': 'USD'},
-                         Reason='Performance bonus')
+                         Reason=reason)
         if r.valid:
             self._log(2, 'Bonused ${} to worker {}'.format(bonus, worker_id))
         else:
             self._log(1, 'Error assigning bonus {} to worker {}, assignment {}'
                      .format(bonus, worker_id, assignment_id))
+            self._log(2, r)
             return r
 
     def process_df(self, df):
@@ -281,12 +280,55 @@ if __name__ == '__main__':
         'version',
         help='Version code e.g. 1A.0'
     )
+    parser.add_argument(
+        '-v', '--verbosity',
+        type=int,
+        default=0,
+        )
+    parser.add_argument(
+        '--extra',
+        type=float,
+        default=0.0,
+        )
     args = parser.parse_args()
-    comp = Compensator(verbose=2)
-    identifiers = pd.read_csv('data/human_raw/{}/identifiers.csv'.format(args.version))
-    pdf = pd.read_csv('data/human/{}/participants.csv'.format(args.version))
-    pdf = pdf.join(identifiers.set_index('pid'))
-    for i, row in pdf.iterrows():
-        comp.approve(row.assignment_id)
-        if row.bonus > 0:
-            comp.grant_bonus(row.worker_id, row.assignment_id, round(row.bonus, 2))
+    comp = Compensator(verbose=args.verbosity)
+    identifiers = pd.read_csv(f'data/human_raw/{args.version}/identifiers.csv').set_index('pid')
+    pdf = pd.read_csv(f'data/human/{args.version}/participants.csv').set_index('pid')
+    pdf = pdf.join(identifiers).reset_index()
+
+    try:
+        payment = pd.read_csv(f'data/human_raw/{args.version}/payment.csv').set_index('worker_id')
+        pdf = pdf.set_index('worker_id')
+        pdf['status'] = payment['status'].fillna('submitted')
+        pdf = pdf.reset_index()
+    except FileNotFoundError:
+        pdf['status'] = 'submitted'
+
+    pdf.bonus = pdf.bonus.clip(lower=0) + args.extra
+    total = pdf.query('status != "bonused"').bonus.sum()
+    response = input(f'Assigning ${total:.2f} in bonuses. Continue? y/[n]:  ')
+    if response != 'y':
+        print('Exiting.')
+        exit(0)
+
+    print(pdf.bonus)
+    def run():
+        for i, row in pdf.iterrows():
+            if row.status == 'submitted':
+                err = comp.approve(row.assignment_id)
+                if not err:
+                    row.status = 'approved'
+            if row.status == 'approved':
+                if row.bonus <= 0:
+                    row.status = 'no bonus'
+                else:
+                    err = comp.grant_bonus(row.worker_id, 
+                                           row.assignment_id,
+                                           round(row.bonus, 2),
+                                           reason='Extra 50¢ b/c experiment was broken.')
+                    if not err:
+                        row.status = 'bonused'
+            yield row[['pid', 'worker_id', 'assignment_id', 'bonus', 'status']]
+
+    pd.DataFrame(run()).to_csv(f'data/human_raw/{args.version}/payment.csv', index=False)
+

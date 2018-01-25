@@ -62,3 +62,11 @@ class MouselabPolicy(SoftmaxPolicy):
 
         return x
 
+
+class SatisficingPolicy(object):
+    """docstring for SatisficingPolicy"""
+    def __init__(self, arg):
+        super().__init__()
+        self.arg = arg
+      
+
