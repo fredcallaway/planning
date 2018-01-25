@@ -263,12 +263,12 @@ class MouselabEnv(gym.Env):
         assert False
 
     @lru_cache(None) 
-    def leaves(self, node):
-        trees = [self.subtree[n1] for n1 in self.tree[0]]
-        for t in trees:
-            if node in t:
-                return tuple(t)
-        assert False
+    def leaves(self):
+        return [path[-1] for path in self.all_paths()]
+
+    def path_values(self, state):
+        return [self.node_quality(node, state) 
+                for node in self.leaves()]
 
     def node_value_after_observe(self, obs, node, state):
         """A distribution over the expected value of node, after making an observation.
