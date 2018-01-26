@@ -67,7 +67,7 @@ $(window).on 'load', ->
       inspectCost: 1
       startTime: Date(Date.now())
       bonusRate: .01
-      variance: ['constant_high', 'constant_low', 'increasing', 'decreasing'][CONDITION]
+      # variance: ['constant_high', 'constant_low', 'increasing', 'decreasing'][CONDITION]
       branching: '312'
 
     psiturk.recordUnstructuredData 'params', PARAMS
@@ -99,8 +99,6 @@ $(window).on 'load', ->
           clearTimeout loadTimeout
           $('#data-error').show()
         )
-
-
 
 createStartButton = ->
   if DEBUG
