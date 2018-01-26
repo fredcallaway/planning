@@ -113,6 +113,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @moveDelay=500
         @clickEnergy=0
         @moveEnergy=0
+        @startScore=0
 
         @allowSimulation=false
         @revealRewards=true
@@ -224,6 +225,8 @@ jsPsych.plugins['mouselab-mdp'] = do ->
 
         if @timeLimit
           TIME_LEFT = @timeLimit
+
+        @addScore @startScore
       # -----------------------------
 
       @canvasElement = $('<canvas>',
@@ -236,12 +239,11 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         html: lowerMessage or '&nbsp'
       ).appendTo @stage
 
-      if @minTime
-        @waitMessage = $('<div>',
-          id: 'mouselab-wait-msg'
-          class: 'mouselab-msg-bottom'
-          # html: """Please wait <span id='mdp-time'></span> seconds"""
-        ).appendTo @display
+      @waitMessage = $('<div>',
+        id: 'mouselab-wait-msg'
+        class: 'mouselab-msg-bottom'
+        # html: """Please wait <span id='mdp-time'></span> seconds"""
+      ).appendTo @display
 
       @waitMessage.hide()
       @defaultLowerMessage = lowerMessage
@@ -609,10 +611,13 @@ jsPsych.plugins['mouselab-mdp'] = do ->
           do @stage.empty
 
     checkFinished: =>
-      if @complete and @timeLeft? and @timeLeft > 0
-        @waitMessage.show()
-      if @complete and @timeLeft <= 0
-        @waitMessage.hide()
+      if @complete and @timeLeft?
+        if @timeLeft > 0
+          @waitMessage.show()
+        else
+          @waitMessage.hide()
+          do @endTrial
+      else
         do @endTrial
 
 

@@ -2,7 +2,7 @@
 // coffeelint: disable=max_line_length, indentation
 var BLOCKS, CONDITION, DEBUG, DEMO, N_TRIAL, PARAMS, SCORE, STRUCTURE, TRIALS, calculateBonus, createStartButton, getTrials, initializeExperiment, psiturk, saveData;
 
-DEBUG = true;
+DEBUG = false;
 
 if (DEBUG) {
   console.log("X X X X X X X X X X X X X X X X X\n X X X X X DEBUG  MODE X X X X X\nX X X X X X X X X X X X X X X X X");
@@ -127,7 +127,7 @@ createStartButton = function() {
 };
 
 initializeExperiment = function() {
-  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, experiment_timeline, finish, fullMessage, img, prompt_resubmit, quiz, reprompt, reset_score, save_data, test, text, train, train_basic, train_final, train_hidden, train_inspect_cost, train_inspector, verbal_responses;
+  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, experiment_timeline, finish, fullMessage, img, pre_test, prompt_resubmit, quiz, reprompt, reset_score, save_data, test, text, train, train_basic, train_final, train_hidden, train_inspect_cost, train_inspector, verbal_responses;
   $('#jspsych-target').html('');
   console.log('INITIALIZE EXPERIMENT');
   //  ======================== #
@@ -294,7 +294,7 @@ initializeExperiment = function() {
     //   throw new Error('Incorrect bonus rate')
     s = "**you will earn 1 cent for every $1 you make in the game.**";
     if (long) {
-      s += " For example, if your final score is $50, you will receive a bonus of **$0.50**.";
+      s += " For example, if your final score is $150, you will receive a bonus of **$1.50**.";
     }
     return s;
   };
@@ -310,24 +310,7 @@ initializeExperiment = function() {
   });
   train = new Block({
     training: true,
-    timeline: [
-      train_basic,
-      divider,
-      train_hidden,
-      divider,
-      train_inspector,
-      divider,
-      train_inspect_cost,
-      divider,
-      train_final,
-      new ButtonBlock({
-        stimulus: function() {
-          SCORE = 0;
-          psiturk.finishInstructions();
-          return markdown(`# Training Completed\n\nWell done! You've completed the training phase and you're ready to\nplay *Web of Cash* for real. You will have **${test.timeline.length}\nrounds** to make as much money as you can. Remember, ${bonus_text()}\n\nGood luck!`);
-        }
-      })
-    ]
+    timeline: [train_basic, divider, train_hidden, divider, train_inspector, divider, train_inspect_cost, divider, train_final]
   });
   quiz = new Block({
     preamble: function() {
@@ -335,14 +318,22 @@ initializeExperiment = function() {
     },
     type: 'survey-multi-choice',
     questions: ["What was the range of node values?", "What is the cost of clicking?", "How much REAL money do you earn?"],
-    options: [['$0 to $15', '-$10 to $10', '-$12 to 12', '-$30 to $30'], ['$0', '$1', '$2', '$3'], ['1 cent for every $100 you make in the game', '1 cent for every $10 you make in the game', '1 dollar for every $10 you make in the game']]
+    options: [['$0 to $15', '-$10 to $10', '-$12 to 12', '-$30 to $30'], ['$0', '$1', '$2', '$3'], ['1 cent for every $1 you make in the game', '1 cent for every $10 you make in the game', '1 dollar for every $1 you make in the game', '1 dollar for every $10 you make in the game']]
+  });
+  pre_test = new ButtonBlock({
+    stimulus: function() {
+      SCORE = 0;
+      psiturk.finishInstructions();
+      return markdown(`# Training Completed\n\nWell done! You've completed the training phase and you're ready to\nplay *Web of Cash* for real. You will have **${test.timeline.length}\nrounds** to make as much money as you can. Remember, ${bonus_text()}\n\nOne more thing: **You need to spend a minimum of 7 seconds on each\ntrial.** If you finish before then, you'll have to wait until 7 seconds\nhave passed.\n\nTo thank you for your work so far, we'll start you off with **$50**.\nGood luck!`);
+    }
   });
   test = new MouselabBlock({
-    minTime: 5,
+    minTime: 7,
     blockName: 'test',
     stateDisplay: 'click',
     stateClickCost: PARAMS.inspectCost,
-    timeline: getTrials(20)
+    timeline: getTrials(20),
+    startScore: 50
   });
   verbal_responses = new Block({
     type: 'survey-text',
@@ -362,9 +353,9 @@ initializeExperiment = function() {
     button: 'Submit HIT'
   });
   if (DEBUG) {
-    experiment_timeline = [test, train, quiz, test, verbal_responses, finish];
+    experiment_timeline = [pre_test, test, train, quiz, test, verbal_responses, finish];
   } else {
-    experiment_timeline = [train, quiz, test, verbal_responses, finish];
+    experiment_timeline = [train, quiz, pre_test, test, verbal_responses, finish];
   }
   // ================================================ #
   // ========= START AND END THE EXPERIMENT ========= #
