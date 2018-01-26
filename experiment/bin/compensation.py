@@ -324,8 +324,7 @@ if __name__ == '__main__':
                 else:
                     err = comp.grant_bonus(row.worker_id, 
                                            row.assignment_id,
-                                           round(row.bonus, 2),
-                                           reason='Extra 50¢ b/c experiment was broken.')
+                                           round(row.bonus, 2))
                     if not err:
                         row.status = 'bonused'
             yield row[['pid', 'worker_id', 'assignment_id', 'bonus', 'status']]

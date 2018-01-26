@@ -152,7 +152,7 @@ def reformat_data(version):
     # Split tdf into separate dataframes for each type of trial.
     data = {'participants': pdf}
     for trial_type, df in tdf.groupby('trial_type'):
-        # df = df.dropna(axis=1)
+        df = df.dropna(axis=1)
         df = df.drop('internal_node_id', axis=1)
         df = df.drop('trial_index', axis=1)
         df.columns = [to_snake_case(c) for c in df.columns]
