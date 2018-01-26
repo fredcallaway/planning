@@ -154,7 +154,7 @@ def write_rollouts(env_type, seed):
 def chunk_simulate(env_type, seed, chunk_i):
     name = f'{env_type}_{seed}'
     os.makedirs(f'data/exp_sim/{name}', exist_ok=True)
-    polfile = f'data/policies/{name}.pkl'
+    polfile = a
     pol = load(polfile)
     chunk = TRIAL_ID_CHUNKS[chunk_i]
 
@@ -188,7 +188,7 @@ def chunk_exp_Q(env_type, seed, chunk_i):
                 q = env.expected_term_reward(state)
             else:
                 samples = []
-                for _ in range(100):
+                for _ in range(1000):
                     env._state = state
                     env.init, r, *_ = env.step(action)
                     samples.append(r + sum(run_episode(pol, env)['rewards']))

@@ -1,6 +1,6 @@
 # coffeelint: disable=max_line_length, indentation
 
-DEBUG = yes
+DEBUG = no
 if DEBUG
   console.log """
   X X X X X X X X X X X X X X X X X
@@ -237,29 +237,9 @@ initializeExperiment = ->
     lowerMessage: '<b>Move with the arrow keys.</b>'
     timeline: getTrials 5
 
-  
-  train_ghost = new MouselabBlock
-    blockName: 'train_ghost'
-    stateDisplay: 'never'
-    prompt: ->
-      markdown """
-      ## Ghost Mode
-
-      It's hard to make good decisions when you can't see what you're doing!
-      Fortunately, you have been equipped with a very handy tool. By pressing
-      `space` you will enter ***Ghost Mode***. While in Ghost Mode your true
-      score won't change, but you'll see how your score *would have* changed
-      if you had visited that node for real. At any point you can press
-      `space` again to return to the realm of the living. **Note:** You can
-      only enter Ghost Mode when you are in the first node.
-    """
-    lowerMessage: '<b>Press</b> <code>space</code>  <b>to enter ghost mode.</b>'
-    timeline: getTrials 5
-
-  
   train_inspector = new MouselabBlock
     blockName: 'train_inspector'
-    special: 'trainClick'
+    # special: 'trainClick'
     stateDisplay: 'click'
     stateClickCost: 0
     prompt: ->
@@ -272,7 +252,8 @@ initializeExperiment = ->
       **Note:** you can only use the node inspector when you're on the first
       node.
 
-      Practice using the inspector on **at least three nodes** before moving.
+      Trying using the node inspector on a few nodes before making your first
+      move.
     """
     # but the node inspector takes some time to work and you can only inspect one node at a time.
     timeline: getTrials 5
@@ -335,7 +316,6 @@ initializeExperiment = ->
       train_inspector
       divider
       train_inspect_cost
-      # TODO: reward distribution attention check
       divider
       train_final
       new ButtonBlock
@@ -366,7 +346,7 @@ initializeExperiment = ->
       "How much REAL money do you earn?"
     ]
     options: [
-      ['$0 to $10', '-$5 to $5', '-$12 to 12', '-$30 to $30']
+      ['$0 to $15', '-$10 to $10', '-$12 to 12', '-$30 to $30']
       ['$0','$1','$2','$3']
       ['1 cent for every $100 you make in the game',
        '1 cent for every $10 you make in the game',
@@ -419,8 +399,9 @@ initializeExperiment = ->
 
   if DEBUG
     experiment_timeline = [
+      test
       train
-      # quiz
+      quiz
       test
       verbal_responses
       finish

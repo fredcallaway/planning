@@ -46,9 +46,9 @@ class Normal(Distribution):
         d.expectation = lambda *args: self.mu
         return d
 
-    def to_discrete(self, n=10):
+    def to_discrete(self, n=10, max_sigma=2):
         d = scipy.stats.norm(self.mu, self.sigma)
-        vals = np.linspace(-2*self.sigma+self.mu, 2*self.sigma+self.mu, n)
+        vals = np.linspace(-max_sigma*self.sigma+self.mu, max_sigma*self.sigma+self.mu, n)
         delta = vals[1] - vals[0]
         bins = np.array((-np.inf, *(vals[1:] - delta/2), np.inf))
         probs = np.diff(d.cdf(bins))

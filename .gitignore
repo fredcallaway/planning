@@ -12,3 +12,4 @@ python/data/policies/
 python/data/rollouts/
 python/fred_analyze_human.ipynb
 python/old_optimal.ipynb
+python/fred-trees.ipynb

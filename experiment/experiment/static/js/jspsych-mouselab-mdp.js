@@ -166,6 +166,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
         leftMessage = `Round ${this._block.trialCount + 1}/${this._block.timeline.length}`;
       }
       this.data = {
+        stateRewards: this.stateRewards,
         trial_id: trial_id,
         block: blockName,
         trialIndex: this.trialIndex,

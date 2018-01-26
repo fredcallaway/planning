@@ -155,6 +155,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         leftMessage = "Round #{@_block.trialCount + 1}/#{@_block.timeline.length}"
 
       @data =
+        stateRewards: @stateRewards
         trial_id: trial_id
         block: blockName
         trialIndex: @trialIndex
