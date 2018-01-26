@@ -2,7 +2,7 @@
 // coffeelint: disable=max_line_length, indentation
 var BLOCKS, CONDITION, DEBUG, DEMO, N_TRIAL, PARAMS, SCORE, STRUCTURE, TRIALS, calculateBonus, createStartButton, getTrials, initializeExperiment, psiturk, saveData;
 
-DEBUG = false;
+DEBUG = true;
 
 if (DEBUG) {
   console.log("X X X X X X X X X X X X X X X X X\n X X X X X DEBUG  MODE X X X X X\nX X X X X X X X X X X X X X X X X");
@@ -253,7 +253,7 @@ initializeExperiment = function() {
     blockName: 'train_basic',
     stateDisplay: 'always',
     prompt: function() {
-      return markdown("## Web of Cash\n\nIn this HIT, you will play a game called *Web of Cash*. You will guide a\nmoney-loving spider through a spider web. When you land on a gray circle\n(a ***node***) the value of the node is added to your score. You can\nmove the spider with the arrow keys, but only in the direction of the\narrows between the nodes. Go ahead, try a few rounds now!");
+      return markdown("## Web of Cash\n\nIn this HIT, you will play a game called *Web of Cash*. You will guide a\nmoney-loving spider through a spider web. When you land on a gray circle\n(a ***node***) the value of the node is added to your score. A node can\nhave value -10, -5, 5, or 10. All values are equally likely.\n\nYou can move the spider with the arrow keys, but only in the direction\nof the arrows between the nodes. Go ahead, try a few rounds now!");
     },
     lowerMessage: '<b>Move with the arrow keys.</b>',
     timeline: getTrials(10)
@@ -331,13 +331,14 @@ initializeExperiment = function() {
   });
   quiz = new Block({
     preamble: function() {
-      return markdown("# Quiz\n\n**MAKE SURE THE RANGES ARE CORRECT**");
+      return markdown("# Quiz\n");
     },
     type: 'survey-multi-choice',
     questions: ["What was the range of node values?", "What is the cost of clicking?", "How much REAL money do you earn?"],
     options: [['$0 to $15', '-$10 to $10', '-$12 to 12', '-$30 to $30'], ['$0', '$1', '$2', '$3'], ['1 cent for every $100 you make in the game', '1 cent for every $10 you make in the game', '1 dollar for every $10 you make in the game']]
   });
   test = new MouselabBlock({
+    minTime: 5,
     blockName: 'test',
     stateDisplay: 'click',
     stateClickCost: PARAMS.inspectCost,
@@ -374,7 +375,7 @@ initializeExperiment = function() {
     var bonus;
     bonus = SCORE * PARAMS.bonusRate;
     bonus = (Math.round(bonus * 100)) / 100; // round to nearest cent
-    return bonus;
+    return Math.min(0, bonus);
   };
   reprompt = null;
   save_data = function() {

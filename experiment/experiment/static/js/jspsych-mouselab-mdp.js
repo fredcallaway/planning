@@ -148,7 +148,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       // @transition=null  # function `(s0, a, s1, r) -> null` called after each transition
       
       // leftMessage="Round: #{TRIAL_INDEX}/#{N_TRIAL}"
-      ({display: this.display, graph: this.graph, layout: this.layout, initial: this.initial, stateLabels: this.stateLabels = 'reward', stateDisplay: this.stateDisplay = 'never', stateClickCost: this.stateClickCost = 0, edgeLabels: this.edgeLabels = 'never', edgeDisplay: this.edgeDisplay = 'always', edgeClickCost: this.edgeClickCost = 0, stateRewards: this.stateRewards = null, clickDelay: this.clickDelay = 0, moveDelay: this.moveDelay = 500, clickEnergy: this.clickEnergy = 0, moveEnergy: this.moveEnergy = 0, allowSimulation: this.allowSimulation = false, revealRewards: this.revealRewards = true, training: this.training = false, special: this.special = '', timeLimit: this.timeLimit = null, energyLimit: this.energyLimit = null, keys: this.keys = KEYS, trialIndex: this.trialIndex = TRIAL_INDEX, playerImage: this.playerImage = 'static/images/plane.png', size = 80, trial_id = null, blockName = 'none', prompt = '&nbsp;', leftMessage = '&nbsp;', centerMessage = '&nbsp;', rightMessage = RIGHT_MESSAGE, lowerMessage = '&nbsp;'} = config); // html display element // defines transition and reward functions // defines position of states // initial state of player // object mapping from state names to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time a state is clicked // object mapping from edge names (s0 + '__' + s1) to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time an edge is clicked // mapping from actions to keycodes // number of trial (starts from 1) // determines the size of states, text, etc...
+      ({display: this.display, graph: this.graph, layout: this.layout, initial: this.initial, stateLabels: this.stateLabels = 'reward', stateDisplay: this.stateDisplay = 'never', stateClickCost: this.stateClickCost = 0, edgeLabels: this.edgeLabels = 'never', edgeDisplay: this.edgeDisplay = 'always', edgeClickCost: this.edgeClickCost = 0, stateRewards: this.stateRewards = null, clickDelay: this.clickDelay = 0, moveDelay: this.moveDelay = 500, clickEnergy: this.clickEnergy = 0, moveEnergy: this.moveEnergy = 0, allowSimulation: this.allowSimulation = false, revealRewards: this.revealRewards = true, training: this.training = false, special: this.special = '', timeLimit: this.timeLimit = null, minTime: this.minTime = null, energyLimit: this.energyLimit = null, keys: this.keys = KEYS, trialIndex: this.trialIndex = TRIAL_INDEX, playerImage: this.playerImage = 'static/images/plane.png', size = 80, trial_id = null, blockName = 'none', prompt = '&nbsp;', leftMessage = '&nbsp;', centerMessage = '&nbsp;', rightMessage = RIGHT_MESSAGE, lowerMessage = '&nbsp;'} = config); // html display element // defines transition and reward functions // defines position of states // initial state of player // object mapping from state names to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time a state is clicked // object mapping from edge names (s0 + '__' + s1) to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time an edge is clicked // mapping from actions to keycodes // number of trial (starts from 1) // determines the size of states, text, etc...
       LOG_INFO('NAME', this.name);
       SIZE = size;
       _.extend(this, config);
@@ -171,12 +171,12 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
         block: blockName,
         trialIndex: this.trialIndex,
         score: 0,
+        simulationMode: [],
         rewards: [],
         path: [],
         rt: [],
         actions: [],
         actionTimes: [],
-        simulationMode: [],
         queries: {
           click: {
             state: {
@@ -220,7 +220,6 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
         this.stage = $('#mouselab-stage');
         this.prompt = $('#mouselab-prompt');
         this.prompt.html(prompt);
-        console.log('prompt', prompt);
       } else {
         // @canvasElement = $('#mouselab-canvas')
         // @lowerMessage = $('#mouselab-msg-bottom')
@@ -255,6 +254,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
           TIME_LEFT = this.timeLimit;
         }
       }
+      // -----------------------------
       this.canvasElement = $('<canvas>', {
         id: 'mouselab-canvas'
       }).attr({
@@ -263,8 +263,17 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       }).appendTo(this.stage);
       this.lowerMessage = $('<div>', {
         id: 'mouselab-msg-bottom',
+        class: 'mouselab-msg-bottom',
         html: lowerMessage || '&nbsp'
       }).appendTo(this.stage);
+      if (this.minTime) {
+        this.waitMessage = $('<div>', {
+          id: 'mouselab-wait-msg',
+          class: 'mouselab-msg-bottom'
+        // html: """Please wait <span id='mdp-time'></span> seconds"""
+        }).appendTo(this.display);
+      }
+      this.waitMessage.hide();
       this.defaultLowerMessage = lowerMessage;
       mdp = this;
       LOG_INFO('new MouselabMDP', this);
@@ -276,33 +285,29 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
     }
 
     startTimer() {
-      var $timer, formatTime, start, tick;
-      $timer = $('#mouselab-msg-left');
-      start = getTime();
-      this.timerID = null;
-      formatTime = function(time) {
-        var minutes, seconds;
-        seconds = time % 60;
-        minutes = Math.floor(time / 60);
-        return (minutes ? (minutes > 9 ? minutes : '0' + minutes) : '00') + ':' + (seconds > 9 ? seconds : '0' + seconds);
-      };
-      tick = () => {
-        if (TIME_LEFT < 0) {
-          console.log('DONE');
-          window.clearInterval(this.timerID);
-          this.lowerMessage.html("<b>Time is up! Press any key to continue.</br>");
-          return this.endBlock();
-        } else {
-          $timer.html(`Time: <b>${formatTime(TIME_LEFT)}</b>`);
-          return TIME_LEFT -= 1;
+      var interval;
+      LOG_INFO('startTimer');
+      this.timeLeft = this.minTime;
+      this.waitMessage.html(`Please wait ${this.timeLeft} seconds`);
+      interval = ifvisible.onEvery(1, () => {
+        if (this.freeze) {
+          return;
         }
-      };
-      tick();
-      return this.timerID = window.setInterval(tick, 1000);
+        this.timeLeft -= 1;
+        console.log(this.timeLeft);
+        this.waitMessage.html(`Please wait ${this.timeLeft} seconds`);
+        // $('#mdp-time').html @timeLeft
+        // $('#mdp-time').css 'color', (redGreen (-@timeLeft + .1))  # red if > 0
+        if (this.timeLeft === 0) {
+          interval.stop();
+          return this.checkFinished();
+        }
+      });
+      $('#mdp-time').html(this.timeLeft);
+      return $('#mdp-time').css('color', redGreen(-this.timeLeft + .1));
     }
 
     endBlock() {
-      console.log('endBlock');
       this.blockOver = true;
       jsPsych.pluginAPI.cancelAllKeyboardResponses();
       return this.keyListener = jsPsych.pluginAPI.getKeyboardResponse({
@@ -311,7 +316,6 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
         persist: false,
         allow_held_key: false,
         callback_function: (info) => {
-          console.log('CLEAR');
           jsPsych.finishTrial(this.data);
           this.display.empty();
           return jsPsych.endCurrentTimeline();
@@ -332,7 +336,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
         if (!this.simulationMode) {
           this.allowSimulation = false;
           if (this.defaultLowerMessage) {
-            this.lowerMessage.html('<b>Move with the arrow keys.</b>');
+            this.lowerMessage.html('Move with the arrow keys.');
             this.lowerMessage.css('color', '#000');
           }
         }
@@ -375,7 +379,6 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       LOG_DEBUG(`getOutcome ${s0}, ${a}`);
       [s1, r] = this.graph[s0][a];
       if (this.stateRewards != null) {
-        console.log('YES');
         r = this.stateRewards[s1];
       }
       return [r, s1];
@@ -523,7 +526,6 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
     arrive(s, repeat = false) {
       var a, g, keys;
       g = this.states[s];
-      console.log('g', g);
       g.setLabel(this.stateRewards[s]);
       this.canvas.renderAll();
       this.freeze = false;
@@ -572,7 +574,6 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
 
     addScore(v) {
       var score;
-      console.log('addScore', v, SCORE);
       this.data.score += v;
       if (this.simulationMode) {
         score = this.data.score;
@@ -610,15 +611,15 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       jsPsych.pluginAPI.cancelAllKeyboardResponses();
       LOG_DEBUG('run');
       this.buildMap();
-      fabric.Image.fromURL(this.playerImage, ((img) => {
+      if (this.timeLimit || this.minTime) {
+        this.startTimer();
+      }
+      return fabric.Image.fromURL(this.playerImage, ((img) => {
         this.initPlayer(img);
         this.canvas.renderAll();
         this.initTime = Date.now();
         return this.arrive(this.initial);
       }));
-      if (this.timeLimit) {
-        return this.startTimer();
-      }
     }
 
     draw(obj) {
@@ -698,7 +699,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
         persist: false,
         allow_held_key: false,
         callback_function: (info) => {
-          console.log('CLEAR');
+          this.data.trialTime = getTime() - this.initTime;
           jsPsych.finishTrial(this.data);
           return this.stage.empty();
         }
@@ -706,7 +707,11 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
     }
 
     checkFinished() {
-      if (this.complete) {
+      if (this.complete && (this.timeLeft != null) && this.timeLeft > 0) {
+        this.waitMessage.show();
+      }
+      if (this.complete && this.timeLeft <= 0) {
+        this.waitMessage.hide();
         return this.endTrial();
       }
     }

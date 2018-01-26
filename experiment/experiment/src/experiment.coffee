@@ -1,6 +1,6 @@
 # coffeelint: disable=max_line_length, indentation
 
-DEBUG = no
+DEBUG = yes
 if DEBUG
   console.log """
   X X X X X X X X X X X X X X X X X
@@ -212,9 +212,11 @@ initializeExperiment = ->
 
       In this HIT, you will play a game called *Web of Cash*. You will guide a
       money-loving spider through a spider web. When you land on a gray circle
-      (a ***node***) the value of the node is added to your score. You can
-      move the spider with the arrow keys, but only in the direction of the
-      arrows between the nodes. Go ahead, try a few rounds now!
+      (a ***node***) the value of the node is added to your score. A node can
+      have value -10, -5, 5, or 10. All values are equally likely.
+
+      You can move the spider with the arrow keys, but only in the direction
+      of the arrows between the nodes. Go ahead, try a few rounds now!
     """
     lowerMessage: '<b>Move with the arrow keys.</b>'
     timeline: getTrials 10
@@ -335,7 +337,6 @@ initializeExperiment = ->
     preamble: -> markdown """
       # Quiz
 
-      **MAKE SURE THE RANGES ARE CORRECT**
     """
     type: 'survey-multi-choice'
     questions: [
@@ -353,6 +354,7 @@ initializeExperiment = ->
 
 
   test = new MouselabBlock
+    minTime: 5
     blockName: 'test'
     stateDisplay: 'click'
     stateClickCost: PARAMS.inspectCost
@@ -421,7 +423,7 @@ initializeExperiment = ->
   calculateBonus = ->
     bonus = SCORE * PARAMS.bonusRate
     bonus = (Math.round (bonus * 100)) / 100  # round to nearest cent
-    return bonus
+    return Math.min(0, bonus)
   
 
   reprompt = null

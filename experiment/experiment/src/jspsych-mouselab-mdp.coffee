@@ -119,6 +119,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @training=false
         @special=''
         @timeLimit=null
+        @minTime=null
         @energyLimit=null
 
         # @transition=null  # function `(s0, a, s1, r) -> null` called after each transition
@@ -160,12 +161,12 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         block: blockName
         trialIndex: @trialIndex
         score: 0
+        simulationMode: []
         rewards: []
         path: []
         rt: []
         actions: []
         actionTimes: []
-        simulationMode: []
         queries: {
           click: {
             state: {'target': [], 'time': []}
@@ -191,7 +192,6 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @stage = $('#mouselab-stage')
         @prompt = $('#mouselab-prompt')
         @prompt.html prompt
-        console.log 'prompt', prompt
         # @canvasElement = $('#mouselab-canvas')
         # @lowerMessage = $('#mouselab-msg-bottom')
       else
@@ -223,9 +223,8 @@ jsPsych.plugins['mouselab-mdp'] = do ->
           id: 'mouselab-stage').appendTo @display
 
         if @timeLimit
-          TIME_LEFT = @timeLimit       
-
-
+          TIME_LEFT = @timeLimit
+      # -----------------------------
 
       @canvasElement = $('<canvas>',
         id: 'mouselab-canvas',
@@ -233,9 +232,18 @@ jsPsych.plugins['mouselab-mdp'] = do ->
 
       @lowerMessage = $('<div>',
         id: 'mouselab-msg-bottom'
+        class: 'mouselab-msg-bottom'
         html: lowerMessage or '&nbsp'
       ).appendTo @stage
 
+      if @minTime
+        @waitMessage = $('<div>',
+          id: 'mouselab-wait-msg'
+          class: 'mouselab-msg-bottom'
+          # html: """Please wait <span id='mdp-time'></span> seconds"""
+        ).appendTo @display
+
+      @waitMessage.hide()
       @defaultLowerMessage = lowerMessage
 
       mdp = this
@@ -247,31 +255,24 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       @lowerMessage.css 'color', '#000'
 
     startTimer: =>
-      $timer = $('#mouselab-msg-left')
-      start = do getTime
-      @timerID = null
+      LOG_INFO 'startTimer'
+      @timeLeft = @minTime
+      @waitMessage.html "Please wait #{@timeLeft} seconds"
+      interval = ifvisible.onEvery 1, =>
+        if @freeze then return
+        @timeLeft -= 1
+        console.log @timeLeft
+        @waitMessage.html "Please wait #{@timeLeft} seconds"
+        # $('#mdp-time').html @timeLeft
+        # $('#mdp-time').css 'color', (redGreen (-@timeLeft + .1))  # red if > 0
+        if @timeLeft is 0
+          do interval.stop
+          do @checkFinished
       
-      formatTime = (time) ->
-        seconds = time % 60
-        minutes = time // 60
-        ((if minutes then (if minutes > 9 then minutes else '0' + minutes) else '00') +
-         ':' + (if seconds > 9 then seconds else '0' + seconds))
-
-      tick = =>
-        if TIME_LEFT < 0
-          console.log 'DONE'
-          window.clearInterval @timerID
-          @lowerMessage.html """<b>Time is up! Press any key to continue.</br>"""
-          @endBlock()
-        else
-          $timer.html "Time: <b>#{formatTime TIME_LEFT}</b>"
-          TIME_LEFT -= 1
-
-      do tick
-      @timerID = window.setInterval tick, 1000
+      $('#mdp-time').html @timeLeft
+      $('#mdp-time').css 'color', (redGreen (-@timeLeft + .1))
 
     endBlock: () ->
-      console.log 'endBlock'
       @blockOver = true
       jsPsych.pluginAPI.cancelAllKeyboardResponses()
       @keyListener = jsPsych.pluginAPI.getKeyboardResponse
@@ -280,7 +281,6 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         persist: false
         allow_held_key: false
         callback_function: (info) =>
-          console.log 'CLEAR'
           jsPsych.finishTrial @data
           do @display.empty
           do jsPsych.endCurrentTimeline
@@ -299,7 +299,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         if not @simulationMode
           @allowSimulation = false
           if @defaultLowerMessage
-            @lowerMessage.html '<b>Move with the arrow keys.</b>'
+            @lowerMessage.html 'Move with the arrow keys.'
             @lowerMessage.css 'color', '#000'
 
 
@@ -342,7 +342,6 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       LOG_DEBUG "getOutcome #{s0}, #{a}"
       [s1, r] = @graph[s0][a]
       if @stateRewards?
-        console.log 'YES'
         r = @stateRewards[s1]
       return [r, s1]
 
@@ -462,7 +461,6 @@ jsPsych.plugins['mouselab-mdp'] = do ->
     # Called when the player arrives in a new state.
     arrive: (s, repeat=false) =>
       g = @states[s]
-      console.log('g', g)
       g.setLabel @stateRewards[s]
       @canvas.renderAll()
       @freeze = false
@@ -496,7 +494,6 @@ jsPsych.plugins['mouselab-mdp'] = do ->
           @handleKey s, action
 
     addScore: (v) =>
-      console.log 'addScore', v, SCORE
       @data.score += v
       if @simulationMode
         score = @data.score
@@ -534,14 +531,14 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       jsPsych.pluginAPI.cancelAllKeyboardResponses()
       LOG_DEBUG 'run'
       @buildMap()
+      if @timeLimit or @minTime
+        do @startTimer
       fabric.Image.fromURL @playerImage, ((img) =>
         @initPlayer img
         @canvas.renderAll()
         @initTime = Date.now()
         @arrive @initial
       )
-      if @timeLimit
-        do @startTimer
     # Draw object on the canvas.
     draw: (obj) =>
       @canvas.add obj
@@ -607,13 +604,17 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         persist: false
         allow_held_key: false
         callback_function: (info) =>
-          console.log 'CLEAR'
+          @data.trialTime = getTime() - @initTime
           jsPsych.finishTrial @data
           do @stage.empty
 
     checkFinished: =>
-      if @complete
+      if @complete and @timeLeft? and @timeLeft > 0
+        @waitMessage.show()
+      if @complete and @timeLeft <= 0
+        @waitMessage.hide()
         do @endTrial
+
 
   #  =========================== #
   #  ========= Graphics ========= #
