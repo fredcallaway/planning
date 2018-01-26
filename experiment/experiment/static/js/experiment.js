@@ -2,7 +2,7 @@
 // coffeelint: disable=max_line_length, indentation
 var BLOCKS, CONDITION, DEBUG, DEMO, N_TRIAL, PARAMS, SCORE, STRUCTURE, TRIALS, calculateBonus, createStartButton, getTrials, initializeExperiment, psiturk, saveData;
 
-DEBUG = false;
+DEBUG = true;
 
 if (DEBUG) {
   console.log("X X X X X X X X X X X X X X X X X\n X X X X X DEBUG  MODE X X X X X\nX X X X X X X X X X X X X X X X X");
@@ -127,7 +127,7 @@ createStartButton = function() {
 };
 
 initializeExperiment = function() {
-  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, experiment_timeline, finish, fullMessage, img, prompt_resubmit, quiz, reprompt, reset_score, save_data, test, text, train, train_basic, train_final, train_hidden, train_inspect_cost, train_inspector, verbal_responses;
+  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, experiment_timeline, finish, fullMessage, img, prompt_resubmit, quiz, reprompt, reset_score, save_data, test, text, train, train_basic, train_final, train_ghost, train_hidden, train_inspect_cost, train_inspector, verbal_responses;
   $('#jspsych-target').html('');
   console.log('INITIALIZE EXPERIMENT');
   //  ======================== #
@@ -267,13 +267,22 @@ initializeExperiment = function() {
     lowerMessage: '<b>Move with the arrow keys.</b>',
     timeline: getTrials(5)
   });
+  train_ghost = new MouselabBlock({
+    blockName: 'train_ghost',
+    stateDisplay: 'never',
+    prompt: function() {
+      return markdown("## Ghost Mode\n\nIt's hard to make good decisions when you can't see what you're doing!\nFortunately, you have been equipped with a very handy tool. By pressing\n`space` you will enter ***Ghost Mode***. While in Ghost Mode your true\nscore won't change, but you'll see how your score *would have* changed\nif you had visited that node for real. At any point you can press\n`space` again to return to the realm of the living. **Note:** You can\nonly enter Ghost Mode when you are in the first node.");
+    },
+    lowerMessage: '<b>Press</b> <code>space</code>  <b>to enter ghost mode.</b>',
+    timeline: getTrials(5)
+  });
   train_inspector = new MouselabBlock({
     blockName: 'train_inspector',
-    // special: 'trainClick'
+    special: 'trainClick',
     stateDisplay: 'click',
     stateClickCost: 0,
     prompt: function() {
-      return markdown("## Node Inspector\n\nIt's hard to make good decision when you can't see what you're doing!\nFortunately, you have access to a ***node inspector*** which can reveal\nthe value of a node. To use the node inspector, simply click on a node.\n**Note:** you can only use the node inspector when you're on the first\nnode.\n\nTrying using the node inspector on a few nodes before making your first\nmove.");
+      return markdown("## Node Inspector\n\nIt's hard to make good decision when you can't see what you're doing!\nFortunately, you have access to a ***node inspector*** which can reveal\nthe value of a node. To use the node inspector, simply click on a node.\n**Note:** you can only use the node inspector when you're on the first\nnode.\n\nPractice using the inspector on **at least three nodes** before moving.");
     },
     // but the node inspector takes some time to work and you can only inspect one node at a time.
     timeline: getTrials(5)
@@ -318,6 +327,7 @@ initializeExperiment = function() {
       train_inspector,
       divider,
       train_inspect_cost,
+      // TODO: reward distribution attention check
       divider,
       train_final,
       new ButtonBlock({
@@ -335,7 +345,7 @@ initializeExperiment = function() {
     },
     type: 'survey-multi-choice',
     questions: ["What was the range of node values?", "What is the cost of clicking?", "How much REAL money do you earn?"],
-    options: [['$0 to $15', '-$10 to $10', '-$12 to 12', '-$30 to $30'], ['$0', '$1', '$2', '$3'], ['1 cent for every $100 you make in the game', '1 cent for every $10 you make in the game', '1 dollar for every $10 you make in the game']]
+    options: [['$0 to $10', '-$5 to $5', '-$12 to 12', '-$30 to $30'], ['$0', '$1', '$2', '$3'], ['1 cent for every $100 you make in the game', '1 cent for every $10 you make in the game', '1 dollar for every $10 you make in the game']]
   });
   test = new MouselabBlock({
     blockName: 'test',
@@ -361,7 +371,13 @@ initializeExperiment = function() {
     button: 'Submit HIT'
   });
   if (DEBUG) {
-    experiment_timeline = [test, train, quiz, test, verbal_responses, finish];
+    experiment_timeline = [
+      train,
+      // quiz
+      test,
+      verbal_responses,
+      finish
+    ];
   } else {
     experiment_timeline = [train, quiz, test, verbal_responses, finish];
   }
