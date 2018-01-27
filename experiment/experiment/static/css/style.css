@@ -50,10 +50,9 @@
     text-align: center;
 }
 
-#mouselab-msg-bottom {
+.mouselab-msg-bottom {
     width: 100%;
     font-size: 16pt;
-    // font-weight: bold;
     text-align: center;
 }
 

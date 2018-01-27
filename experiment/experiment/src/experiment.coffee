@@ -212,9 +212,11 @@ initializeExperiment = ->
 
       In this HIT, you will play a game called *Web of Cash*. You will guide a
       money-loving spider through a spider web. When you land on a gray circle
-      (a ***node***) the value of the node is added to your score. You can
-      move the spider with the arrow keys, but only in the direction of the
-      arrows between the nodes. Go ahead, try a few rounds now!
+      (a ***node***) the value of the node is added to your score. A node can
+      have value -10, -5, 5, or 10. All values are equally likely.
+
+      You can move the spider with the arrow keys, but only in the direction
+      of the arrows between the nodes. Go ahead, try a few rounds now!
     """
     lowerMessage: '<b>Move with the arrow keys.</b>'
     timeline: getTrials 10
@@ -280,7 +282,7 @@ initializeExperiment = ->
     #   throw new Error('Incorrect bonus rate')
     s = "**you will earn 1 cent for every $1 you make in the game.**"
     if long
-      s += " For example, if your final score is $50, you will receive a bonus of **$0.50**."
+      s += " For example, if your final score is $150, you will receive a bonus of **$1.50**."
     return s
 
 
@@ -316,26 +318,12 @@ initializeExperiment = ->
       train_inspect_cost
       divider
       train_final
-      new ButtonBlock
-        stimulus: ->
-          SCORE = 0
-          psiturk.finishInstructions()
-          markdown """
-          # Training Completed
-
-          Well done! You've completed the training phase and you're ready to
-          play *Web of Cash* for real. You will have **#{test.timeline.length}
-          rounds** to make as much money as you can. Remember, #{bonus_text()}
-          
-          Good luck!
-        """
     ]
 
   quiz = new Block
     preamble: -> markdown """
       # Quiz
 
-      **MAKE SURE THE RANGES ARE CORRECT**
     """
     type: 'survey-multi-choice'
     questions: [
@@ -346,17 +334,39 @@ initializeExperiment = ->
     options: [
       ['$0 to $15', '-$10 to $10', '-$12 to 12', '-$30 to $30']
       ['$0','$1','$2','$3']
-      ['1 cent for every $100 you make in the game',
+      ['1 cent for every $1 you make in the game',
        '1 cent for every $10 you make in the game',
+       '1 dollar for every $1 you make in the game',
        '1 dollar for every $10 you make in the game']
     ]
 
+  pre_test = new ButtonBlock
+    stimulus: ->
+      SCORE = 0
+      psiturk.finishInstructions()
+      markdown """
+      # Training Completed
+
+      Well done! You've completed the training phase and you're ready to
+      play *Web of Cash* for real. You will have **#{test.timeline.length}
+      rounds** to make as much money as you can. Remember, #{bonus_text()}
+
+      One more thing: **You need to spend a minimum of 7 seconds on each
+      trial.** If you finish before then, you'll have to wait until 7 seconds
+      have passed.
+
+      To thank you for your work so far, we'll start you off with **$50**.
+      Good luck!
+    """
+
 
   test = new MouselabBlock
+    minTime: 7
     blockName: 'test'
     stateDisplay: 'click'
     stateClickCost: PARAMS.inspectCost
     timeline: getTrials 20
+    startScore: 50
     
   verbal_responses = new Block
     type: 'survey-text'
@@ -397,6 +407,7 @@ initializeExperiment = ->
 
   if DEBUG
     experiment_timeline = [
+      pre_test
       test
       train
       quiz
@@ -408,6 +419,7 @@ initializeExperiment = ->
     experiment_timeline = [
       train
       quiz
+      pre_test
       test
       verbal_responses
       finish
@@ -421,7 +433,7 @@ initializeExperiment = ->
   calculateBonus = ->
     bonus = SCORE * PARAMS.bonusRate
     bonus = (Math.round (bonus * 100)) / 100  # round to nearest cent
-    return bonus
+    return Math.min(0, bonus)
   
 
   reprompt = null
