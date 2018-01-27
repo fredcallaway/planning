@@ -1,0 +1,29 @@
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\meta}{_{\text{meta}}}
+\newcommand{\Qmeta}{$Q\meta ^\star$}
+\newcommand{\expect}[1]{\mathds{E} \left[ #1 \right]}
+
+\section{Bounded-Optimal planning in the Mouselab-MDP paradigm}
+\label{sec:mouselab_mdp}
+
+%\fl{Here we define bounded-optimal planning in Mouselab-MDP paradigm as the solution to a meta-level MDP. We then say that we solve that meta-level MDP with our strategy-discovery method without going into details.}
+
+Following the strategy discovery method developed by \cite{LiederCallawayGulKruegerGriffiths2017}, we model the problem of deciding how to plan as a meta-level Markov decision process (meta-level MDP) \cite{Hay2012}.
+Concretely, we model the optimal planning strategy for the Mouselab-MDP paradigm as the solution to the meta-level MDP
+\begin{equation}
+    M\meta = (\B, \A, \T, r\meta),\label{eq:MouselabMDPMetaMDP}
+\end{equation}
+where each belief state $b$ encodes one Normal distribution for each transition's reward. Thus, the belief state $b^{(t)}$ at time $t$ can be represented as $((\mu_1^{(t)},\sigma_1^{(t)}), \cdots, (\mu_K^{(t)},\sigma_K^{(t)}))$ such that $b^{(t)}(\theta_k=x)=\mathcal{N}(x; \mu_k^{(t)}, {\sigma_k^{(t)}}^2)$.
+The initial belief state $b^{(0)}$ encodes the joint distribution $\mathcal{N}(\mathbf{x}; (\mu^{(R)}_1,\cdots,\mu^{(R)}_K), \Sigma^{(R)}$ the rewards are sampled from. 
+The metalevel actions are $\A = \{c_1, \cdots, c_K, \bot\}$ where $c_k$ reveals the reward at state $k$ and $\bot$ selects the path with highest expected sum of rewards according to the current belief state.
+The transition probabilities $T\meta(b^{(t)}, c_k, b^{(t+1)})$ encode that performing computation $c_k$ sets $(\mu_k^{(t+1)}, \sigma_k^{(t+1)})$ to $(x,0)$ with probability density $\phi(x;\mu_k^{(t)},\sigma_k^{(t)})$ where $\phi$ is the density function of the normal distribution.
+The metalevel reward function is $r\meta(b, c) = -\lambda$ for $c \in \{c_1,\cdots, c_K \}$, and $r\meta\left( (\mu_1,\sigma_1),\cdots, (\mu_K,\sigma_K)), \bot\right) = \max_{\mathbf{t}\in \mathcal{T}} \sum_{k \in \mathbf{t}} \mu_k$ where $\mathcal{T}$ is the set of possible trajectories $\mathbf{t}$ through the environment.
+
+
+
+Having formulated the problem of deciding how to plan in these terms, we can now compute the optimal planning strategy by solving the meta-level MDP using dynamic programming \cite{Puterman2014}.\fl{TODO: Fred, is this accurate enough, or is there a simple way to describe your exact solution more accurately?}
+%applying the meta-level reinforcement learning method developed by \cite{LiederCallawayGulKruegerGriffiths2017}.
+
+\fl{This is technical,but I think without it bounded optimal planning would be left undefined.}
