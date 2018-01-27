@@ -282,7 +282,7 @@ initializeExperiment = ->
     #   throw new Error('Incorrect bonus rate')
     s = "**you will earn 1 cent for every $1 you make in the game.**"
     if long
-      s += " For example, if your final score is $150, you will receive a bonus of **$1.50**."
+      s += " For example, if your final score is $150, you will receive a bonus of $1.50."
     return s
 
 
@@ -299,7 +299,7 @@ initializeExperiment = ->
       money based on how well you play the game. Specifically,
       #{bonus_text('long')}
 
-      This is the **final practice round** before your score starts counting
+      These are the **final practice rounds** before your score starts counting
       towards your bonus.
     """
     lowerMessage: fullMessage
@@ -365,7 +365,7 @@ initializeExperiment = ->
     blockName: 'test'
     stateDisplay: 'click'
     stateClickCost: PARAMS.inspectCost
-    timeline: getTrials 20
+    timeline: getTrials (if DEBUG then 3 else 20)
     startScore: 50
     
   verbal_responses = new Block
@@ -407,10 +407,8 @@ initializeExperiment = ->
 
   if DEBUG
     experiment_timeline = [
-      pre_test
-      test
-      train
       quiz
+      pre_test
       test
       verbal_responses
       finish
@@ -433,7 +431,7 @@ initializeExperiment = ->
   calculateBonus = ->
     bonus = SCORE * PARAMS.bonusRate
     bonus = (Math.round (bonus * 100)) / 100  # round to nearest cent
-    return Math.min(0, bonus)
+    return Math.max(0, bonus)
   
 
   reprompt = null

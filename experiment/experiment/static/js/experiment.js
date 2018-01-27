@@ -294,7 +294,7 @@ initializeExperiment = function() {
     //   throw new Error('Incorrect bonus rate')
     s = "**you will earn 1 cent for every $1 you make in the game.**";
     if (long) {
-      s += " For example, if your final score is $150, you will receive a bonus of **$1.50**.";
+      s += " For example, if your final score is $150, you will receive a bonus of $1.50.";
     }
     return s;
   };
@@ -303,7 +303,7 @@ initializeExperiment = function() {
     stateDisplay: 'click',
     stateClickCost: PARAMS.inspectCost,
     prompt: function() {
-      return markdown(`## Earn a Big Bonus\n\nNice! You've learned how to play *Web of Cash*, and you're almost ready\nto play it for real. To make things more interesting, you will earn real\nmoney based on how well you play the game. Specifically,\n${bonus_text('long')}\n\nThis is the **final practice round** before your score starts counting\ntowards your bonus.`);
+      return markdown(`## Earn a Big Bonus\n\nNice! You've learned how to play *Web of Cash*, and you're almost ready\nto play it for real. To make things more interesting, you will earn real\nmoney based on how well you play the game. Specifically,\n${bonus_text('long')}\n\nThese are the **final practice rounds** before your score starts counting\ntowards your bonus.`);
     },
     lowerMessage: fullMessage,
     timeline: getTrials(5)
@@ -332,7 +332,7 @@ initializeExperiment = function() {
     blockName: 'test',
     stateDisplay: 'click',
     stateClickCost: PARAMS.inspectCost,
-    timeline: getTrials(20),
+    timeline: getTrials((DEBUG ? 3 : 20)),
     startScore: 50
   });
   verbal_responses = new Block({
@@ -353,7 +353,7 @@ initializeExperiment = function() {
     button: 'Submit HIT'
   });
   if (DEBUG) {
-    experiment_timeline = [pre_test, test, train, quiz, test, verbal_responses, finish];
+    experiment_timeline = [quiz, pre_test, test, verbal_responses, finish];
   } else {
     experiment_timeline = [train, quiz, pre_test, test, verbal_responses, finish];
   }
@@ -366,7 +366,7 @@ initializeExperiment = function() {
     var bonus;
     bonus = SCORE * PARAMS.bonusRate;
     bonus = (Math.round(bonus * 100)) / 100; // round to nearest cent
-    return Math.min(0, bonus);
+    return Math.max(0, bonus);
   };
   reprompt = null;
   save_data = function() {
