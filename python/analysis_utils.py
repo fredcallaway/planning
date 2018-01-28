@@ -52,7 +52,10 @@ def parse_json(df):
 
     to_eval = df.columns[df.iloc[0].apply(can_eval)]
     for col in to_eval:
-        df[col] = df[col].apply(ast.literal_eval)
+        try:
+            df[col] = df[col].apply(ast.literal_eval)
+        except:
+            pass
 
 def get_data(version, data_path='data'): 
     data = {}
