@@ -2,63 +2,140 @@ rt,time_elapsed,trial_type,pid
 "[6755, 212, 561]",701585,survey-text,0
 75270,770687,survey-text,0
 68089,770688,survey-text,0
-109763,832672,survey-text,1
-32334,866014,survey-text,1
-90223,804569,survey-text,2
-15383,820965,survey-text,2
-"[8424, 56, 11]",721936,survey-text,3
-298209,1012800,survey-text,3
-289858,1012800,survey-text,3
-256429,1094820,survey-text,4
-13614,1109437,survey-text,4
-68361,740971,survey-text,5
-10159,752138,survey-text,5
-59978,715781,survey-text,6
-17641,734434,survey-text,6
-96636,828955,survey-text,7
-18384,848346,survey-text,7
-44636,603602,survey-text,8
-8936,613548,survey-text,8
-"[8102, 246, 391]",1173537,survey-text,9
-260390,1421310,survey-text,9
-246767,1421310,survey-text,9
-107562,665483,survey-text,10
-9253,675764,survey-text,10
-"[8887, 7, 61]",661881,survey-text,11
-66602,720614,survey-text,11
-57728,720615,survey-text,11
-"[8951, 315, 755]",1071267,survey-text,12
-173164,1237375,survey-text,12
-165098,1237376,survey-text,12
-123501,960093,survey-text,13
-16289,977409,survey-text,13
-225331,1080283,survey-text,14
-52631,1133922,survey-text,14
-74639,957746,survey-text,16
-14847,973603,survey-text,16
-123104,866175,survey-text,17
-10461,877643,survey-text,17
-18857,505405,survey-text,18
-12844,519254,survey-text,18
-103630,707397,survey-text,19
-9210,717611,survey-text,19
-44381,673364,survey-text,20
-28837,703214,survey-text,20
-45169,918864,survey-text,21
-13757,933884,survey-text,21
-"[8546, 4, 166]",945707,survey-text,22
-123636,1060862,survey-text,22
-114150,1060862,survey-text,22
-"[5019, 399, 552]",1060407,survey-text,23
-112042,1153793,survey-text,23
-92378,1153794,survey-text,23
-123419,658156,survey-text,24
-18864,678028,survey-text,24
-"[18066, 210, 156]",865093,survey-text,25
-147043,1007122,survey-text,25
-141023,1007122,survey-text,25
-74311,888497,survey-text,26
-19439,908958,survey-text,26
-"[13820, 53, 103]",521892,survey-text,27
-37426,555695,survey-text,27
-32765,555695,survey-text,27
+61677,670949,survey-text,1
+24037,695992,survey-text,1
+109763,832672,survey-text,2
+32334,866014,survey-text,2
+90223,804569,survey-text,3
+15383,820965,survey-text,3
+179869,1004388,survey-text,4
+42249,1047687,survey-text,4
+"[8424, 56, 11]",721936,survey-text,5
+298209,1012800,survey-text,5
+289858,1012800,survey-text,5
+256429,1094820,survey-text,6
+13614,1109437,survey-text,6
+68361,740971,survey-text,7
+10159,752138,survey-text,7
+78768,801849,survey-text,8
+28461,831338,survey-text,8
+170618,681330,survey-text,9
+29121,711466,survey-text,9
+"[6796, 22, 355]",666050,survey-text,10
+64426,724992,survey-text,10
+57908,724994,survey-text,10
+"[11218, 300, 163]",1099083,survey-text,11
+348304,1432698,survey-text,11
+332606,1432698,survey-text,11
+44824,681794,survey-text,12
+7850,690657,survey-text,12
+71155,654573,survey-text,13
+12019,667599,survey-text,13
+27768,674215,survey-text,14
+6650,681871,survey-text,14
+147613,667214,survey-text,15
+6559,674788,survey-text,15
+27633,607324,survey-text,16
+7030,615365,survey-text,16
+96599,745767,survey-text,17
+13876,760650,survey-text,17
+59978,715781,survey-text,18
+17641,734434,survey-text,18
+"[10830, 69, 25]",805995,survey-text,19
+267453,1062857,survey-text,19
+255860,1062857,survey-text,19
+94486,663603,survey-text,20
+8571,673178,survey-text,20
+96636,828955,survey-text,21
+18384,848346,survey-text,21
+179375,862852,survey-text,22
+22404,886261,survey-text,22
+"[7009, 881, 686]",691618,survey-text,23
+573647,1255765,survey-text,23
+563118,1255767,survey-text,23
+44636,603602,survey-text,24
+8936,613548,survey-text,24
+"[7677, 254, 161]",905140,survey-text,25
+166762,1060549,survey-text,25
+154401,1060549,survey-text,25
+"[8102, 246, 391]",1173537,survey-text,26
+260390,1421310,survey-text,26
+246767,1421310,survey-text,26
+107562,665483,survey-text,27
+9253,675764,survey-text,27
+"[8887, 7, 61]",661881,survey-text,28
+66602,720614,survey-text,28
+57728,720615,survey-text,28
+"[8951, 315, 755]",1071267,survey-text,29
+173164,1237375,survey-text,29
+165098,1237376,survey-text,29
+123501,960093,survey-text,30
+16289,977409,survey-text,30
+94888,758802,survey-text,31
+9207,769018,survey-text,31
+225331,1080283,survey-text,32
+52631,1133922,survey-text,32
+"[9907, 47, 202]",966186,survey-text,33
+213594,1152246,survey-text,33
+185057,1152248,survey-text,33
+45480,745250,survey-text,34
+21140,767396,survey-text,34
+100301,1006267,survey-text,36
+38495,1045769,survey-text,36
+"[5446, 271, 792]",881520,survey-text,37
+116870,987569,survey-text,37
+105045,987569,survey-text,37
+74639,957746,survey-text,38
+14847,973603,survey-text,38
+"[32650, 509, 389]",1118444,survey-text,39
+151779,1263302,survey-text,39
+143853,1263303,survey-text,39
+"[7129, 291, 454]",913850,survey-text,40
+192256,1094355,survey-text,40
+179502,1094355,survey-text,40
+123104,866175,survey-text,41
+10461,877643,survey-text,41
+18857,505405,survey-text,42
+12844,519254,survey-text,42
+"[6539, 73, 817]",703633,survey-text,43
+78022,778708,survey-text,43
+74069,778709,survey-text,43
+"[12001, 21, 3]",730756,survey-text,44
+157117,881305,survey-text,44
+149541,881306,survey-text,44
+7953,436760,survey-text,45
+6192,443962,survey-text,45
+101618,822242,survey-text,46
+16298,839549,survey-text,46
+103630,707397,survey-text,47
+9210,717611,survey-text,47
+44381,673364,survey-text,48
+28837,703214,survey-text,48
+45169,918864,survey-text,49
+13757,933884,survey-text,49
+"[8546, 4, 166]",945707,survey-text,50
+123636,1060862,survey-text,50
+114150,1060862,survey-text,50
+"[5019, 399, 552]",1060407,survey-text,51
+112042,1153793,survey-text,51
+92378,1153794,survey-text,51
+"[7934, 249, 242]",664596,survey-text,52
+111073,771756,survey-text,52
+106153,771757,survey-text,52
+123419,658156,survey-text,53
+18864,678028,survey-text,53
+"[13060, 331, 144]",1692810,survey-text,54
+316382,2001632,survey-text,54
+307820,2001632,survey-text,54
+78433,673530,survey-text,55
+11295,685832,survey-text,55
+"[18066, 210, 156]",865093,survey-text,56
+147043,1007122,survey-text,56
+141023,1007122,survey-text,56
+74311,888497,survey-text,58
+19439,908958,survey-text,58
+128202,1119491,survey-text,59
+111798,1232293,survey-text,59
+"[13820, 53, 103]",521892,survey-text,60
+37426,555695,survey-text,60
+32765,555695,survey-text,60
