@@ -8,7 +8,10 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import ast
 import re
 import json
+import numpy as np
 
+import itertools
+concat = itertools.chain.from_iterable
 logging.basicConfig(level="INFO")
 
 def to_snake_case(name):
@@ -95,6 +98,15 @@ def fetch(site_root, filename, version, force=True):
         n_pid = df[0].unique().shape[0]
         logging.info('Number of participants: %s', n_pid)
 
+def mostly_nan(col):
+    try:
+        return col.apply(np.isnan).mean() > 0.5
+    except:
+        return False
+
+def drop_nan_cols(df):
+    return df[[name for name, col in df.iteritems()
+               if not mostly_nan(col)]]
 
 def reformat_data(version):
     data_path = 'data/human_raw/{}/'.format(version)
@@ -152,11 +164,18 @@ def reformat_data(version):
     # Split tdf into separate dataframes for each type of trial.
     data = {'participants': pdf}
     for trial_type, df in tdf.groupby('trial_type'):
-        df = df.dropna(axis=1)
-        df = df.drop('internal_node_id', axis=1)
-        df = df.drop('trial_index', axis=1)
-        df.columns = [to_snake_case(c) for c in df.columns]
-        data[trial_type] = df
+        if trial_type == 'survey-text':
+            df = df[['pid', 'responses', 'rt', 'time_elapsed']].dropna(axis=0)
+            pd.DataFrame(list(df.groupby('pid').responses.apply(
+                lambda x: list(concat(json.loads(o).values() for o in x))
+            ))).to_csv('../experiment/data/human/{}/survey.csv'
+                       .format(version))
+        else:
+            df = df.dropna(axis=1)
+            df = df.drop('internal_node_id', axis=1)
+            df = df.drop('trial_index', axis=1)
+            df.columns = [to_snake_case(c) for c in df.columns]
+            data[trial_type] = df
 
 
     # Write data.
@@ -183,10 +202,10 @@ def get_password():
 
 def main(version, address, username, password):
 
-    add_auth(address, username, password)
-    files = ["trialdata", "eventdata", "questiondata"]
-    for filename in files:
-        fetch(address, filename, version)
+    # add_auth(address, username, password)
+    # files = ["trialdata", "eventdata", "questiondata"]
+    # for filename in files:
+    #     fetch(address, filename, version)
     reformat_data(version)
 
 
