@@ -161,6 +161,10 @@ def reformat_data(version):
 
     tdf = parse_trialdata()
 
+    path = 'data/human/{}/'.format(version)
+    if not os.path.isdir(path):
+        os.makedirs(path)
+
     # Split tdf into separate dataframes for each type of trial.
     data = {'participants': pdf}
     for trial_type, df in tdf.groupby('trial_type'):
@@ -175,13 +179,11 @@ def reformat_data(version):
             df = df.drop('internal_node_id', axis=1)
             df = df.drop('trial_index', axis=1)
             df.columns = [to_snake_case(c) for c in df.columns]
-            data[trial_type] = df
+        data[trial_type] = df
+
 
 
     # Write data.
-    path = 'data/human/{}/'.format(version)
-    if not os.path.isdir(path):
-        os.makedirs(path)
     for name, df in data.items():
         dest = path + name + '.csv'
         df.to_csv(dest, index=False)
@@ -202,10 +204,10 @@ def get_password():
 
 def main(version, address, username, password):
 
-    # add_auth(address, username, password)
-    # files = ["trialdata", "eventdata", "questiondata"]
-    # for filename in files:
-    #     fetch(address, filename, version)
+    add_auth(address, username, password)
+    files = ["trialdata", "eventdata", "questiondata"]
+    for filename in files:
+        fetch(address, filename, version)
     reformat_data(version)
 
 
