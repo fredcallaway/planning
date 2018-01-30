@@ -131,7 +131,7 @@ createStartButton = function() {
 };
 
 initializeExperiment = function() {
-  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, experiment_timeline, finish, fullMessage, img, nodeValuesDescription, pre_test, prompt_resubmit, quiz, reprompt, reset_score, save_data, talk_demo, test, text, train, train_basic, train_final, train_hidden, train_inspect_cost, train_inspector, verbal_responses;
+  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, experiment_timeline, finish, fullMessage, img, nodeValuesDescription, pre_test, prompt_resubmit, quiz, reprompt, reset_score, save_data, talk_demo, test, text, train, train_basic1, train_basic2, train_final, train_hidden, train_inspect_cost, train_inspector, verbal_responses;
   $('#jspsych-target').html('');
   console.log('INITIALIZE EXPERIMENT');
   text = {
@@ -256,11 +256,20 @@ initializeExperiment = function() {
       return "<div class='center'>Press <code>space</code> to continue.</div>";
     }
   });
-  train_basic = new MouselabBlock({
+  train_basic1 = new MouselabBlock({
     blockName: 'train_basic',
     stateDisplay: 'always',
     prompt: function() {
-      return markdown("## Web of Cash\n\nIn this HIT, you will play a game called *Web of Cash*. You will guide a\nmoney-loving spider through a spider web. When you land on a gray circle\n(a ***node***) the value of the node is added to your score. " + nodeValuesDescription + " Please take a look at the example below to see what this means.\n\nYou can move the spider with the arrow keys, but only in the direction\nof the arrows between the nodes. Go ahead, try a few rounds now!");
+      return markdown("## Web of Cash\n\nIn this HIT, you will play a game called *Web of Cash*. You will guide a\nmoney-loving spider through a spider web. When you land on a gray circle\n(a ***node***) the value of the node is added to your score.\n\nYou can move the spider with the arrow keys, but only in the direction\nof the arrows between the nodes. Go ahead, try it out!");
+    },
+    lowerMessage: 'Move with the arrow keys.',
+    timeline: getTrials(1)
+  });
+  train_basic2 = new MouselabBlock({
+    blockName: 'train_basic',
+    stateDisplay: 'always',
+    prompt: function() {
+      return markdown("## Some nodes are more important than others\n\n" + nodeValuesDescription + " Please take a look at the example below to see what this means.\n\nGo ahead and try a few rounds now!");
     },
     lowerMessage: 'Move with the arrow keys.',
     timeline: getTrials(10)
@@ -312,7 +321,7 @@ initializeExperiment = function() {
   });
   train = new Block({
     training: true,
-    timeline: [train_basic, divider, train_hidden, divider, train_inspector, divider, train_inspect_cost, divider, train_final]
+    timeline: [train_basic1, train_basic2, divider, train_hidden, divider, train_inspector, divider, train_inspect_cost, divider, train_final]
   });
   quiz = new Block({
     preamble: function() {

@@ -216,7 +216,7 @@ initializeExperiment = ->
       SCORE = 0
       "<div class='center'>Press <code>space</code> to continue.</div>"
 
-  train_basic = new MouselabBlock
+  train_basic1 = new MouselabBlock
     blockName: 'train_basic'
     stateDisplay: 'always'
     prompt: ->
@@ -225,10 +225,24 @@ initializeExperiment = ->
 
       In this HIT, you will play a game called *Web of Cash*. You will guide a
       money-loving spider through a spider web. When you land on a gray circle
-      (a ***node***) the value of the node is added to your score. #{nodeValuesDescription} Please take a look at the example below to see what this means.
+      (a ***node***) the value of the node is added to your score.
 
       You can move the spider with the arrow keys, but only in the direction
-      of the arrows between the nodes. Go ahead, try a few rounds now!
+      of the arrows between the nodes. Go ahead, try it out!
+    """
+    lowerMessage: 'Move with the arrow keys.'
+    timeline: getTrials 1
+    
+  train_basic2 = new MouselabBlock
+    blockName: 'train_basic'
+    stateDisplay: 'always'
+    prompt: ->
+      markdown """
+      ## Some nodes are more important than others
+
+      #{nodeValuesDescription} Please take a look at the example below to see what this means.
+
+      Go ahead and try a few rounds now!
     """
     lowerMessage: 'Move with the arrow keys.'
     timeline: getTrials 10
@@ -321,7 +335,8 @@ initializeExperiment = ->
   train = new Block
     training: true
     timeline: [
-      train_basic
+      train_basic1
+      train_basic2    
       divider
       train_hidden
       divider
