@@ -183,6 +183,16 @@ initializeExperiment = ->
   #  ============================== #
 
   img = (name) -> """<img class='display' src='static/images/#{name}.png'/>"""
+  
+  if PARAMS.variance is "6_6_6"        
+        nodeValuesDescription ="""A node can have value -10, -5, 5, or 10. All values are equally likely."""        
+  
+  if PARAMS.variance is "2_4_24"
+        nodeValuesDescription ="""The more steps it takes to reach a node, the more variable its value tends to be: The value of a node you can reach in one step is equally likely to be -4, -2, 2, or 4. The value of a node you can reach in two steps is equally likely to be -8, -4, 4, or 8. Finally,  the value of a node you can reach in three steps is equally likely to be -48, -24, 24, or 48."""   
+        
+  if PARAMS.variance is "24_4_2"
+        nodeValuesDescription ="""The more steps it takes to reach a node, the less variable its value tends to be: The value of a node you can reach in one step is equally likely to be -48, -24, 24, or 48. The value of a node you can reach in two steps is equally likely to be -8, -4, 4, or 8. Finally,  the value of a node you can reach in three steps is equally likely to be  -4, -2, 2, or 4."""         
+        
 
 
   # instruct_loop = new Block
@@ -215,8 +225,7 @@ initializeExperiment = ->
 
       In this HIT, you will play a game called *Web of Cash*. You will guide a
       money-loving spider through a spider web. When you land on a gray circle
-      (a ***node***) the value of the node is added to your score. A node can
-      have value -10, -5, 5, or 10. All values are equally likely.
+      (a ***node***) the value of the node is added to your score. #{nodeValuesDescription} Please take a look at the example below to see what this means.
 
       You can move the spider with the arrow keys, but only in the direction
       of the arrows between the nodes. Go ahead, try a few rounds now!
@@ -330,13 +339,15 @@ initializeExperiment = ->
     """
     type: 'survey-multi-choice'
     questions: [
-      "What was the range of node values?"
+      "What is the range of node values in the first step?"
+      "What is the range of node values in the last step?"
       "What is the cost of clicking?"
       "How much REAL money do you earn?"
     ]
     options: [
-      ['$0 to $15', '-$10 to $10', '-$12 to 12', '-$30 to $30']
-      ['$0','$1','$2','$3']
+      ['$-4 to $4', '$-8 to $8', '$-48 to $48'],
+      ['$-4 to $4', '$-8 to $8', '$-48 to $48'],
+      ['$0', '$1', '$8', '$24'],    
       ['1 cent for every $1 you make in the game',
        '1 cent for every $10 you make in the game',
        '1 dollar for every $1 you make in the game',
