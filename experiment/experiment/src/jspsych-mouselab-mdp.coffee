@@ -115,6 +115,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @moveEnergy=0
         @startScore=0
 
+        @demo=null
         @allowSimulation=false
         @revealRewards=true
         @training=false
@@ -215,10 +216,11 @@ jsPsych.plugins['mouselab-mdp'] = do ->
           class: 'mouselab-header'
           html: rightMessage).appendTo @display
 
-        @prompt = $('<div>',
-          id: 'mouselab-prompt'
-          class: 'mouselab-prompt'
-          html: prompt).appendTo @display
+        unless prompt is null
+          @prompt = $('<div>',
+            id: 'mouselab-prompt'
+            class: 'mouselab-prompt'
+            html: prompt).appendTo @display
 
         @stage = $('<div>',
           id: 'mouselab-stage').appendTo @display
@@ -256,14 +258,32 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       @freeze = false
       @lowerMessage.css 'color', '#000'
 
+    runDemo: () =>
+      @timeLeft = 1
+
+      i = 0
+      interval = ifvisible.onEvery 1, =>
+        if ifvisible.now()
+          a = @actions[i]
+          if @stateRewards[a]?
+            console.log 'click', a.state
+            @clickState @states[a.state], a.state
+          else
+            s = _.last @data.path
+            console.log 'path', @data.path,
+            console.log 'move', a.state, @state2move[a.state]
+            @handleKey s, @state2move[a.state]
+          i += 1
+          if i is actions.length
+            do interval.stop
+            # window.clearInterval ID
+
     startTimer: =>
-      LOG_INFO 'startTimer'
       @timeLeft = @minTime
       @waitMessage.html "Please wait #{@timeLeft} seconds"
       interval = ifvisible.onEvery 1, =>
         if @freeze then return
         @timeLeft -= 1
-        console.log @timeLeft
         @waitMessage.html "Please wait #{@timeLeft} seconds"
         # $('#mdp-time').html @timeLeft
         # $('#mdp-time').css 'color', (redGreen (-@timeLeft + .1))  # red if > 0
@@ -291,7 +311,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
 
     # Called when a valid action is initiated via a key press.
     handleKey: (s0, a) =>
-      LOG_INFO 'handleKey', s0, a
+      LOG_DEBUG 'handleKey', s0, a
       if a is 'simulate'
         if @simulationMode
           @endSimulationMode()
@@ -385,7 +405,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
           @arrive s1
 
     clickState: (g, s) =>
-      LOG_INFO "clickState #{s}"
+      LOG_DEBUG "clickState #{s}"
       if @moved
         @lowerMessage.html "<b>You can't use the node inspector after moving!</b>"
         @lowerMessage.css 'color', '#FC4754'
@@ -611,14 +631,15 @@ jsPsych.plugins['mouselab-mdp'] = do ->
           do @stage.empty
 
     checkFinished: =>
-      if @complete and @timeLeft?
-        if @timeLeft > 0
-          @waitMessage.show()
+      if @complete
+        if @timeLeft?
+          if @timeLeft > 0
+            @waitMessage.show()
+          else
+            @waitMessage.hide()
+            do @endTrial
         else
-          @waitMessage.hide()
           do @endTrial
-      else
-        do @endTrial
 
 
   #  =========================== #

@@ -77,12 +77,12 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
     return (Math.round(x * 100)) / 100;
   };
   checkObj = function(obj, keys) {
-    var i, k, len;
+    var j, k, len;
     if (keys == null) {
       keys = Object.keys(obj);
     }
-    for (i = 0, len = keys.length; i < len; i++) {
-      k = keys[i];
+    for (j = 0, len = keys.length; j < len; j++) {
+      k = keys[j];
       if (obj[k] === void 0) {
         console.log('Bad Object: ', obj);
         throw new Error(`${k} is undefined`);
@@ -104,6 +104,8 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
   MouselabMDP = class MouselabMDP {
     constructor(config) {
       var blockName, centerMessage, leftMessage, lowerMessage, prompt, rightMessage, size, trial_id;
+      this.runDemo = this.runDemo.bind(this);
+      // window.clearInterval ID
       this.startTimer = this.startTimer.bind(this);
       // ---------- Responding to user input ---------- #
 
@@ -148,7 +150,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       // @transition=null  # function `(s0, a, s1, r) -> null` called after each transition
       
       // leftMessage="Round: #{TRIAL_INDEX}/#{N_TRIAL}"
-      ({display: this.display, graph: this.graph, layout: this.layout, initial: this.initial, stateLabels: this.stateLabels = 'reward', stateDisplay: this.stateDisplay = 'never', stateClickCost: this.stateClickCost = 0, edgeLabels: this.edgeLabels = 'never', edgeDisplay: this.edgeDisplay = 'always', edgeClickCost: this.edgeClickCost = 0, stateRewards: this.stateRewards = null, clickDelay: this.clickDelay = 0, moveDelay: this.moveDelay = 500, clickEnergy: this.clickEnergy = 0, moveEnergy: this.moveEnergy = 0, startScore: this.startScore = 0, allowSimulation: this.allowSimulation = false, revealRewards: this.revealRewards = true, training: this.training = false, special: this.special = '', timeLimit: this.timeLimit = null, minTime: this.minTime = null, energyLimit: this.energyLimit = null, keys: this.keys = KEYS, trialIndex: this.trialIndex = TRIAL_INDEX, playerImage: this.playerImage = 'static/images/plane.png', size = 80, trial_id = null, blockName = 'none', prompt = '&nbsp;', leftMessage = '&nbsp;', centerMessage = '&nbsp;', rightMessage = RIGHT_MESSAGE, lowerMessage = '&nbsp;'} = config); // html display element // defines transition and reward functions // defines position of states // initial state of player // object mapping from state names to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time a state is clicked // object mapping from edge names (s0 + '__' + s1) to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time an edge is clicked // mapping from actions to keycodes // number of trial (starts from 1) // determines the size of states, text, etc...
+      ({display: this.display, graph: this.graph, layout: this.layout, initial: this.initial, stateLabels: this.stateLabels = 'reward', stateDisplay: this.stateDisplay = 'never', stateClickCost: this.stateClickCost = 0, edgeLabels: this.edgeLabels = 'never', edgeDisplay: this.edgeDisplay = 'always', edgeClickCost: this.edgeClickCost = 0, stateRewards: this.stateRewards = null, clickDelay: this.clickDelay = 0, moveDelay: this.moveDelay = 500, clickEnergy: this.clickEnergy = 0, moveEnergy: this.moveEnergy = 0, startScore: this.startScore = 0, demo: this.demo = null, allowSimulation: this.allowSimulation = false, revealRewards: this.revealRewards = true, training: this.training = false, special: this.special = '', timeLimit: this.timeLimit = null, minTime: this.minTime = null, energyLimit: this.energyLimit = null, keys: this.keys = KEYS, trialIndex: this.trialIndex = TRIAL_INDEX, playerImage: this.playerImage = 'static/images/plane.png', size = 80, trial_id = null, blockName = 'none', prompt = '&nbsp;', leftMessage = '&nbsp;', centerMessage = '&nbsp;', rightMessage = RIGHT_MESSAGE, lowerMessage = '&nbsp;'} = config); // html display element // defines transition and reward functions // defines position of states // initial state of player // object mapping from state names to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time a state is clicked // object mapping from edge names (s0 + '__' + s1) to labels // one of 'never', 'hover', 'click', 'always' // subtracted from score every time an edge is clicked // mapping from actions to keycodes // number of trial (starts from 1) // determines the size of states, text, etc...
       LOG_INFO('NAME', this.name);
       SIZE = size;
       _.extend(this, config);
@@ -242,11 +244,13 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
           class: 'mouselab-header',
           html: rightMessage
         }).appendTo(this.display);
-        this.prompt = $('<div>', {
-          id: 'mouselab-prompt',
-          class: 'mouselab-prompt',
-          html: prompt
-        }).appendTo(this.display);
+        if (prompt !== null) {
+          this.prompt = $('<div>', {
+            id: 'mouselab-prompt',
+            class: 'mouselab-prompt',
+            html: prompt
+          }).appendTo(this.display);
+        }
         this.stage = $('<div>', {
           id: 'mouselab-stage'
         }).appendTo(this.display);
@@ -283,9 +287,32 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       this.lowerMessage.css('color', '#000');
     }
 
+    runDemo() {
+      var i, interval;
+      this.timeLeft = 1;
+      i = 0;
+      return interval = ifvisible.onEvery(1, () => {
+        var a, s;
+        if (ifvisible.now()) {
+          a = this.actions[i];
+          if (this.stateRewards[a] != null) {
+            console.log('click', a.state);
+            this.clickState(this.states[a.state], a.state);
+          } else {
+            s = _.last(this.data.path);
+            console.log('path', this.data.path, console.log('move', a.state, this.state2move[a.state]));
+            this.handleKey(s, this.state2move[a.state]);
+          }
+          i += 1;
+          if (i === actions.length) {
+            return interval.stop();
+          }
+        }
+      });
+    }
+
     startTimer() {
       var interval;
-      LOG_INFO('startTimer');
       this.timeLeft = this.minTime;
       this.waitMessage.html(`Please wait ${this.timeLeft} seconds`);
       interval = ifvisible.onEvery(1, () => {
@@ -293,7 +320,6 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
           return;
         }
         this.timeLeft -= 1;
-        console.log(this.timeLeft);
         this.waitMessage.html(`Please wait ${this.timeLeft} seconds`);
         // $('#mdp-time').html @timeLeft
         // $('#mdp-time').css 'color', (redGreen (-@timeLeft + .1))  # red if > 0
@@ -324,7 +350,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
 
     handleKey(s0, a) {
       var _, s1;
-      LOG_INFO('handleKey', s0, a);
+      LOG_DEBUG('handleKey', s0, a);
       if (a === 'simulate') {
         if (this.simulationMode) {
           return this.endSimulationMode();
@@ -430,7 +456,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
 
     clickState(g, s) {
       var r;
-      LOG_INFO(`clickState ${s}`);
+      LOG_DEBUG(`clickState ${s}`);
       if (this.moved) {
         this.lowerMessage.html("<b>You can't use the node inspector after moving!</b>");
         this.lowerMessage.css('color', '#FC4754');
@@ -535,11 +561,11 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       // Get available actions.
       if (this.graph[s]) {
         keys = (function() {
-          var i, len, ref, results;
+          var j, len, ref, results;
           ref = Object.keys(this.graph[s]);
           results = [];
-          for (i = 0, len = ref.length; i < len; i++) {
-            a = ref[i];
+          for (j = 0, len = ref.length; j < len; j++) {
+            a = ref[j];
             results.push(this.keys[a]);
           }
           return results;
@@ -706,15 +732,17 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
     }
 
     checkFinished() {
-      if (this.complete && (this.timeLeft != null)) {
-        if (this.timeLeft > 0) {
-          return this.waitMessage.show();
+      if (this.complete) {
+        if (this.timeLeft != null) {
+          if (this.timeLeft > 0) {
+            return this.waitMessage.show();
+          } else {
+            this.waitMessage.hide();
+            return this.endTrial();
+          }
         } else {
-          this.waitMessage.hide();
           return this.endTrial();
         }
-      } else {
-        return this.endTrial();
       }
     }
 

@@ -1,6 +1,8 @@
 # coffeelint: disable=max_line_length, indentation
 
 DEBUG = no
+TALK = no
+
 if DEBUG
   console.log """
   X X X X X X X X X X X X X X X X X
@@ -83,7 +85,7 @@ $(window).on 'load', ->
         idx += n
         t.slice(idx-n, idx)
 
-    if DEBUG
+    if DEBUG or TALK
       createStartButton()
       clearTimeout loadTimeout
     else
@@ -101,7 +103,7 @@ $(window).on 'load', ->
         )
 
 createStartButton = ->
-  if DEBUG
+  if DEBUG or TALK
     initializeExperiment()
     return
   $('#load-icon').hide()
@@ -218,7 +220,7 @@ initializeExperiment = ->
       You can move the spider with the arrow keys, but only in the direction
       of the arrows between the nodes. Go ahead, try a few rounds now!
     """
-    lowerMessage: '<b>Move with the arrow keys.</b>'
+    lowerMessage: 'Move with the arrow keys.'
     timeline: getTrials 10
 
   
@@ -234,7 +236,7 @@ initializeExperiment = ->
       value of the nodes. Without this information, it's hard to make good
       decisions. Try completing a few more rounds.
     """
-    lowerMessage: '<b>Move with the arrow keys.</b>'
+    lowerMessage: 'Move with the arrow keys.'
     timeline: getTrials 5
 
   train_inspector = new MouselabBlock
@@ -343,6 +345,7 @@ initializeExperiment = ->
   pre_test = new ButtonBlock
     stimulus: ->
       SCORE = 0
+      prompt: ''
       psiturk.finishInstructions()
       markdown """
       # Training Completed
@@ -351,9 +354,9 @@ initializeExperiment = ->
       play *Web of Cash* for real. You will have **#{test.timeline.length}
       rounds** to make as much money as you can. Remember, #{bonus_text()}
 
-      One more thing: **You need to spend a minimum of 7 seconds on each
-      trial.** If you finish before then, you'll have to wait until 7 seconds
-      have passed.
+      One more thing: **You must spend *at least* 7 seconds on each round.**
+      If you finish a round early, you'll have to wait until 7 seconds have
+      passed.
 
       To thank you for your work so far, we'll start you off with **$50**.
       Good luck!
@@ -365,7 +368,7 @@ initializeExperiment = ->
     blockName: 'test'
     stateDisplay: 'click'
     stateClickCost: PARAMS.inspectCost
-    timeline: getTrials (if DEBUG then 3 else 20)
+    timeline: getTrials (if DEBUG then 3 else 30)
     startScore: 50
     
   verbal_responses = new Block
@@ -404,14 +407,37 @@ initializeExperiment = ->
     ]
     button: 'Submit HIT'
 
+  talk_demo = new Block
+    timeline: [
+      # new MouselabBlock
+      #   lowerMessage: 'Move with the arrow keys.'
+      #   stateDisplay: 'always'
+      #   prompt: null
+      #   stateClickCost: PARAMS.inspectCost
+      #   timeline: getTrials 3
+
+      # divider
+
+      new MouselabBlock
+        stateDisplay: 'click'
+        prompt: null
+        stateClickCost: PARAMS.inspectCost
+        timeline: TRIALS.slice(10,14)
+    ]
+
 
   if DEBUG
     experiment_timeline = [
-      quiz
+      train
+      # quiz
       pre_test
       test
       verbal_responses
       finish
+    ]
+  else if TALK
+    experiment_timeline = [
+      talk_demo
     ]
   else
     experiment_timeline = [
