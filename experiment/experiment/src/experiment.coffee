@@ -69,13 +69,14 @@ $(window).on 'load', ->
       inspectCost: 1
       startTime: Date(Date.now())
       bonusRate: .01
-      # variance: ['constant_high', 'constant_low', 'increasing', 'decreasing'][CONDITION]
+      variance: ['2_4_24', '24_4_2'][CONDITION]
       branching: '312'
 
     psiturk.recordUnstructuredData 'params', PARAMS
 
-    STRUCTURE = loadJson "static/json/structure/#{PARAMS.branching}.json"
-    TRIALS = loadJson "static/json/rewards/#{PARAMS.branching}.json"
+    id = "#{PARAMS.branching}_#{PARAMS.variance}"
+    STRUCTURE = loadJson "static/json/structure/#{id}.json"
+    TRIALS = loadJson "static/json/rewards/#{id}.json"
     console.log "loaded #{TRIALS?.length} trials"
 
     getTrials = do ->
@@ -409,14 +410,14 @@ initializeExperiment = ->
 
   talk_demo = new Block
     timeline: [
-      # new MouselabBlock
-      #   lowerMessage: 'Move with the arrow keys.'
-      #   stateDisplay: 'always'
-      #   prompt: null
-      #   stateClickCost: PARAMS.inspectCost
-      #   timeline: getTrials 3
+      new MouselabBlock
+        lowerMessage: 'Move with the arrow keys.'
+        stateDisplay: 'always'
+        prompt: null
+        stateClickCost: PARAMS.inspectCost
+        timeline: getTrials 3
 
-      # divider
+      divider
 
       new MouselabBlock
         stateDisplay: 'click'

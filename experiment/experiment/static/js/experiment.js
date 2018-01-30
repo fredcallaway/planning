@@ -75,17 +75,19 @@ $(window).on('load', function() {
   loadTimeout = delay(12000, slowLoad);
   psiturk.preloadImages(['static/images/spider.png']);
   return delay(300, function() {
+    var id;
     console.log('Loading data');
     PARAMS = {
       inspectCost: 1,
       startTime: Date(Date.now()),
       bonusRate: .01,
-      // variance: ['constant_high', 'constant_low', 'increasing', 'decreasing'][CONDITION]
+      variance: ['2_4_24', '24_4_2'][CONDITION],
       branching: '312'
     };
     psiturk.recordUnstructuredData('params', PARAMS);
-    STRUCTURE = loadJson(`static/json/structure/${PARAMS.branching}.json`);
-    TRIALS = loadJson(`static/json/rewards/${PARAMS.branching}.json`);
+    id = `${PARAMS.branching}_${PARAMS.variance}`;
+    STRUCTURE = loadJson(`static/json/structure/${id}.json`);
+    TRIALS = loadJson(`static/json/rewards/${id}.json`);
     console.log(`loaded ${(TRIALS != null ? TRIALS.length : void 0)} trials`);
     getTrials = (function() {
       var idx, t;
@@ -359,14 +361,14 @@ initializeExperiment = function() {
   });
   talk_demo = new Block({
     timeline: [
-      // new MouselabBlock
-      //   lowerMessage: 'Move with the arrow keys.'
-      //   stateDisplay: 'always'
-      //   prompt: null
-      //   stateClickCost: PARAMS.inspectCost
-      //   timeline: getTrials 3
-
-      // divider
+      new MouselabBlock({
+        lowerMessage: 'Move with the arrow keys.',
+        stateDisplay: 'always',
+        prompt: null,
+        stateClickCost: PARAMS.inspectCost,
+        timeline: getTrials(3)
+      }),
+      divider,
       new MouselabBlock({
         stateDisplay: 'click',
         prompt: null,
