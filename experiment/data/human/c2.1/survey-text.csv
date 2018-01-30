@@ -1,0 +1,9 @@
+pid,responses,rt,time_elapsed
+0,"{""Q0"":""i used the $1 to look "",""Q1"":""The lowest number"",""Q2"":""after 3"",""Q3"":""the frist circles"",""Q4"":""that's it. ""}",34668,1082882
+0,"{""Q0"":""no"",""Q1"":""27"",""Q2"":""cheers""}",10862,1094751
+1,"{""Q0"":""i clicked the first step til i found a postive one or if all negative i ended up clicking on all 3"",""Q1"":""anything outside the first step wasnt worth the click to me"",""Q2"":""after i found what first step i was taking"",""Q3"":""same throughout"",""Q4"":""that is about all of it""}",77729,752504
+1,"{""Q0"":""no"",""Q1"":""39"",""Q2"":""""}",9556,763063
+2,"{""Q0"":""the most I could lose before reaching the final point is $12 so if I even fine one location worth $24, it would be a positive gain so I clicked on the last nodes."",""Q1"":""The first and second nodes don't really matter"",""Q2"":""I just stopped at an arbitrary 4 clicks."",""Q3"":""just at the end nodes"",""Q4"":""No""}",90702,800857
+2,"{""Q0"":""No"",""Q1"":""22"",""Q2"":""""}",5941,807807
+3,"{""Q0"":""Tried to just look at the first circle until I found a positive and then follow a path"",""Q1"":""Once I got a positive I went that way"",""Q2"":""Once I found a positive"",""Q3"":""one of the first circles"",""Q4"":""I started realizing this was severely underpaid by about round 15 and only have 200 points and stopped clicking and just tried pathways with no clicking to complete the experiment. ""}",126974,915062
+3,"{""Q0"":""No"",""Q1"":""33"",""Q2"":""This is severely underpaid for the time it takes and the likelihood of winning a large bonus seemed highly unlikely. I had many all negative pathways.""}",45222,961291
