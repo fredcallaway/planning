@@ -68,7 +68,7 @@ $(window).on 'load', ->
     PARAMS =
       inspectCost: 1
       startTime: Date(Date.now())
-      bonusRate: .01
+      bonusRate: .002
       variance: ['2_4_24', '24_4_2'][CONDITION]
       branching: '312'
 
@@ -184,17 +184,27 @@ initializeExperiment = ->
 
   img = (name) -> """<img class='display' src='static/images/#{name}.png'/>"""
   
-  if PARAMS.variance is "6_6_6"        
-        nodeValuesDescription ="""A node can have value -10, -5, 5, or 10. All values are equally likely."""        
-  
-  if PARAMS.variance is "2_4_24"
-        nodeValuesDescription ="""Did you notice that the more steps it takes to reach a node, the more variable its value tends to be? The value of a node you can reach in one step is equally likely to be -4, -2, 2, or 4. The value of a node you can reach in two steps is equally likely to be -8, -4, 4, or 8. Finally,  the value of a node you can reach in three steps is equally likely to be -48, -24, 24, or 48."""   
+  nodeValuesDescription = switch PARAMS.variance
+    when "6_6_6" then """
+      A node can have value -10, -5, 5, or 10. All values are equally likely.
+    """
+    when "2_4_24" then """
+      The more steps it takes to reach a node, the more variable its value
+      tends to be: The value of a node you can reach in **one** step is equally
+      likely to be **-4, -2, 2, or 4**. The value of a node you can reach in **two**
+      steps is equally likely to be **-8, -4, 4, or 8**. Finally,  the value of a
+      node you can reach in **three** steps is equally likely to be **-48, -24, 24,
+      or 48**.
+    """
+    when "24_4_2" then """
+      The more steps it takes to reach a node, the less variable its value
+      tends to be: The value of a node you can reach in **one** step is equally
+      likely to be **-48, -24, 24, or 48**. The value of a node you can reach in
+      **two** steps is equally likely to be **-8, -4, 4, or 8**. Finally,  the value
+      of a node you can reach in **three** steps is equally likely to be  -4, -2,
+      2, or 4.
+    """
         
-  if PARAMS.variance is "24_4_2"
-        nodeValuesDescription ="""Did you notice that the more steps it takes to reach a node, the more variable its value tends to be? The value of a node you can reach in one step is equally likely to be -48, -24, 24, or 48. The value of a node you can reach in two steps is equally likely to be -8, -4, 4, or 8. Finally,  the value of a node you can reach in three steps is equally likely to be  -4, -2, 2, or 4."""         
-        
-
-
   # instruct_loop = new Block
   #   timeline: [instructions, quiz]
   #   loop_function: (data) ->
@@ -234,7 +244,7 @@ initializeExperiment = ->
     timeline: getTrials 5
     
   train_basic2 = new MouselabBlock
-    blockName: 'train_basic'
+    blockName: 'train_basic2'
     stateDisplay: 'always'
     prompt: ->
       markdown """
@@ -242,7 +252,7 @@ initializeExperiment = ->
 
       #{nodeValuesDescription} Please take a look at the example below to see what this means.
 
-      Go ahead and try a few rounds now!
+      Try a few more rounds now!
     """
     lowerMessage: 'Move with the arrow keys.'
     timeline: getTrials 5
@@ -306,9 +316,9 @@ initializeExperiment = ->
   bonus_text = (long) ->
     # if PARAMS.bonusRate isnt .01
     #   throw new Error('Incorrect bonus rate')
-    s = "**you will earn 1 cent for every $1 you make in the game.**"
+    s = "**you will earn 1 cent for every $5 you make in the game.**"
     if long
-      s += " For example, if your final score is $150, you will receive a bonus of $1.50."
+      s += " For example, if your final score is $1000, you will receive a bonus of $2."
     return s
 
 
@@ -365,9 +375,9 @@ initializeExperiment = ->
       ['$-4 to $4', '$-8 to $8', '$-48 to $48'],
       ['$0', '$1', '$8', '$24'],    
       ['1 cent for every $1 you make in the game',
-       '1 cent for every $10 you make in the game',
-       '1 dollar for every $1 you make in the game',
-       '1 dollar for every $10 you make in the game']
+       '1 cent for every $5 you make in the game',
+       '5 cents for every $1 you make in the game',
+       '5 cents for every $10 you make in the game']
     ]
 
   pre_test = new ButtonBlock
