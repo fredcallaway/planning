@@ -238,10 +238,10 @@ initializeExperiment = function() {
     nodeValuesDescription = "A node can have value -10, -5, 5, or 10. All values are equally likely.";
   }
   if (PARAMS.variance === "2_4_24") {
-    nodeValuesDescription = "The more steps it takes to reach a node, the more variable its value tends to be: The value of a node you can reach in one step is equally likely to be -4, -2, 2, or 4. The value of a node you can reach in two steps is equally likely to be -8, -4, 4, or 8. Finally,  the value of a node you can reach in three steps is equally likely to be -48, -24, 24, or 48.";
+    nodeValuesDescription = "Did you notice that the more steps it takes to reach a node, the more variable its value tends to be? The value of a node you can reach in one step is equally likely to be -4, -2, 2, or 4. The value of a node you can reach in two steps is equally likely to be -8, -4, 4, or 8. Finally,  the value of a node you can reach in three steps is equally likely to be -48, -24, 24, or 48.";
   }
   if (PARAMS.variance === "24_4_2") {
-    nodeValuesDescription = "The more steps it takes to reach a node, the less variable its value tends to be: The value of a node you can reach in one step is equally likely to be -48, -24, 24, or 48. The value of a node you can reach in two steps is equally likely to be -8, -4, 4, or 8. Finally,  the value of a node you can reach in three steps is equally likely to be  -4, -2, 2, or 4.";
+    nodeValuesDescription = "Did you notice that the more steps it takes to reach a node, the more variable its value tends to be? The value of a node you can reach in one step is equally likely to be -48, -24, 24, or 48. The value of a node you can reach in two steps is equally likely to be -8, -4, 4, or 8. Finally,  the value of a node you can reach in three steps is equally likely to be  -4, -2, 2, or 4.";
   }
   fullMessage = "";
   reset_score = new Block({
@@ -263,7 +263,7 @@ initializeExperiment = function() {
       return markdown("## Web of Cash\n\nIn this HIT, you will play a game called *Web of Cash*. You will guide a\nmoney-loving spider through a spider web. When you land on a gray circle\n(a ***node***) the value of the node is added to your score.\n\nYou can move the spider with the arrow keys, but only in the direction\nof the arrows between the nodes. Go ahead, try it out!");
     },
     lowerMessage: 'Move with the arrow keys.',
-    timeline: getTrials(1)
+    timeline: getTrials(5)
   });
   train_basic2 = new MouselabBlock({
     blockName: 'train_basic',
@@ -272,7 +272,7 @@ initializeExperiment = function() {
       return markdown("## Some nodes are more important than others\n\n" + nodeValuesDescription + " Please take a look at the example below to see what this means.\n\nGo ahead and try a few rounds now!");
     },
     lowerMessage: 'Move with the arrow keys.',
-    timeline: getTrials(10)
+    timeline: getTrials(5)
   });
   train_hidden = new MouselabBlock({
     blockName: 'train_hidden',
@@ -321,7 +321,7 @@ initializeExperiment = function() {
   });
   train = new Block({
     training: true,
-    timeline: [train_basic1, train_basic2, divider, train_hidden, divider, train_inspector, divider, train_inspect_cost, divider, train_final]
+    timeline: [train_basic1, divider, train_basic2, divider, train_hidden, divider, train_inspector, divider, train_inspect_cost, divider, train_final]
   });
   quiz = new Block({
     preamble: function() {
