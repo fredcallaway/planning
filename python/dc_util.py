@@ -65,7 +65,7 @@ def option_util(x,sigma):
     return (sigma*scipy.stats.norm.pdf(x/sigma) -
         np.abs(x)*scipy.stats.norm.cdf(-np.abs(x)/sigma))
 
-def get_all_options(env):
+def get_all_options_old(env):
     paths = env.paths #list of all paths
     avail_moves = [0,]*len(paths) #list of number of unobserved nodes in each path
     path_obs = [] #value of observed nodes in each path
@@ -103,15 +103,15 @@ def get_all_options(env):
     return options, option_utils, path_nodes, path_stds, path_obs, avail_moves
 
 def pick_option_moves(env):
-    options, option_utils, path_nodes, path_stds, path_obs, avail_moves = get_all_options(env)
+    options, option_utils, path_nodes, path_stds, path_obs, avail_moves = get_all_options_old(env)
 
     #c is for chosen
     cpath, cobs = options[np.random.choice(np.arange(len(options))[option_utils == np.max(option_utils)])]
-    cpath_stds = np.array(path_stds[cpath])[:cobs]
-    cpath_nodes = np.array(path_nodes[cpath])[:cobs]
+    cpath_stds = np.array(path_stds[cpath])
+    cpath_nodes = np.array(path_nodes[cpath])
     b = np.random.random(cpath_nodes.size)
 
-    return cpath_nodes[np.lexsort((b,cpath_stds))]
+    return cpath_nodes[np.lexsort((b,cpath_stds))[::-1][:cobs]]
 
 def all_option_insts(path_nodes,path_stds,n_obs):
     insts = [[]]
