@@ -4,7 +4,7 @@ var BLOCKS, CONDITION, DEBUG, DEMO, N_TRIAL, PARAMS, SCORE, STRUCTURE, TALK, TRI
 
 DEBUG = false;
 
-TALK = false;
+TALK = true;
 
 if (DEBUG) {
   console.log("X X X X X X X X X X X X X X X X X\n X X X X X DEBUG  MODE X X X X X\nX X X X X X X X X X X X X X X X X");
@@ -381,13 +381,12 @@ initializeExperiment = function() {
   });
   talk_demo = new Block({
     timeline: [
-      new MouselabBlock({
-        lowerMessage: 'Move with the arrow keys.',
-        stateDisplay: 'always',
-        prompt: null,
-        stateClickCost: PARAMS.inspectCost,
-        timeline: getTrials(3)
-      }),
+      // new MouselabBlock
+      //   lowerMessage: 'Move with the arrow keys.'
+      //   stateDisplay: 'always'
+      //   prompt: null
+      //   stateClickCost: PARAMS.inspectCost
+      //   timeline: getTrials 3
       divider,
       new MouselabBlock({
         stateDisplay: 'click',
