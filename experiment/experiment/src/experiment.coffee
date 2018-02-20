@@ -1,7 +1,7 @@
 # coffeelint: disable=max_line_length, indentation
 
 DEBUG = no
-TALK = no
+TALK = yes
 
 if DEBUG
   console.log """
@@ -447,12 +447,12 @@ initializeExperiment = ->
 
   talk_demo = new Block
     timeline: [
-      new MouselabBlock
-        lowerMessage: 'Move with the arrow keys.'
-        stateDisplay: 'always'
-        prompt: null
-        stateClickCost: PARAMS.inspectCost
-        timeline: getTrials 3
+      # new MouselabBlock
+      #   lowerMessage: 'Move with the arrow keys.'
+      #   stateDisplay: 'always'
+      #   prompt: null
+      #   stateClickCost: PARAMS.inspectCost
+      #   timeline: getTrials 3
 
       divider
 
