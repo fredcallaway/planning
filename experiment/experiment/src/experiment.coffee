@@ -1,7 +1,8 @@
 # coffeelint: disable=max_line_length, indentation
 
 DEBUG = no
-TALK = yes
+TALK = no
+SHOW_PARTICIPANT = false
 
 if DEBUG
   console.log """
@@ -27,6 +28,7 @@ if mode is "{{ mode }}"
 BLOCKS = undefined
 PARAMS = undefined
 TRIALS = undefined
+DEMO_TRIALS = undefined
 STRUCTURE = undefined
 N_TRIAL = undefined
 SCORE = 0
@@ -69,12 +71,15 @@ $(window).on 'load', ->
       inspectCost: 1
       startTime: Date(Date.now())
       bonusRate: .002
-      variance: ['2_4_24', '24_4_2'][CONDITION]
+      # variance: ['2_4_24', '24_4_2'][CONDITION]
       branching: '312'
 
     psiturk.recordUnstructuredData 'params', PARAMS
 
-    id = "#{PARAMS.branching}_#{PARAMS.variance}"
+    if PARAMS.variance
+      id = "#{PARAMS.branching}_#{PARAMS.variance}"
+    else
+      id = "#{PARAMS.branching}"
     STRUCTURE = loadJson "static/json/structure/#{id}.json"
     TRIALS = loadJson "static/json/rewards/#{id}.json"
     console.log "loaded #{TRIALS?.length} trials"
@@ -107,6 +112,24 @@ createStartButton = ->
   if DEBUG or TALK
     initializeExperiment()
     return
+  if DEMO
+    $('#jspsych-target').append """
+      <div class='alert alert-info'>
+        <h3>Demo mode</h3>
+
+        To go through the task as if you were a participant,
+        click <b>Begin</b> above.<br>
+        To view replays of the participants
+        in our study, click <b>View Replays</b> below.
+      </div>
+      <div class='center'>
+        <button class='btn btn-primary btn-lg centered' id="view-replays">View Replays</button>
+      </div>
+    """
+    $('#view-replays').click ->
+      SHOW_PARTICIPANT = true
+      DEMO_TRIALS = _.shuffle loadJson "static/json/demo/312.json"
+      initializeExperiment()
   $('#load-icon').hide()
   $('#slow-load').hide()
   $('#success-load').show()
@@ -224,7 +247,7 @@ initializeExperiment = ->
   divider = new TextBlock
     text: ->
       SCORE = 0
-      "<div class='center'>Press <code>space</code> to continue.</div>"
+      "<div style='text-align: center;'>Press <code>space</code> to continue.</div>"
 
   train_basic1 = new MouselabBlock
     blockName: 'train_basic'
@@ -406,7 +429,10 @@ initializeExperiment = ->
     blockName: 'test'
     stateDisplay: 'click'
     stateClickCost: PARAMS.inspectCost
-    timeline: getTrials (if DEBUG then 3 else 30)
+    timeline: switch
+      when SHOW_PARTICIPANT then DEMO_TRIALS
+      when DEBUG then getTrials 3
+      else getTrials 30
     startScore: 50
     
   verbal_responses = new Block
@@ -464,8 +490,11 @@ initializeExperiment = ->
     ]
 
 
-  if DEBUG
-    experiment_timeline = [
+  experiment_timeline = switch
+    when SHOW_PARTICIPANT then [
+      test
+    ]
+    when DEBUG then [
       train
       # quiz
       pre_test
@@ -473,19 +502,17 @@ initializeExperiment = ->
       verbal_responses
       finish
     ]
-  else if TALK
-    experiment_timeline = [
+    when TALK then [
       talk_demo
     ]
-  else
-    experiment_timeline = [
-      train
-      quiz
-      pre_test
-      test
-      verbal_responses
-      finish
-    ]
+    else [
+        train
+        quiz
+        pre_test
+        test
+        verbal_responses
+        finish
+      ]
 
   # ================================================ #
   # ========= START AND END THE EXPERIMENT ========= #

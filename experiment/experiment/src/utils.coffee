@@ -22,6 +22,11 @@ check = (name, val) ->
     throw new Error "#{name}is undefined"
   val
 
+
+sleep = (ms) ->
+  new Promise (resolve) ->
+    window.setTimeout resolve, ms
+
 mean = (xs) ->
   (xs.reduce ((acc, x) -> acc+x)) / xs.length
 

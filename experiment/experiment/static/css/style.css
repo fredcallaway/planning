@@ -56,6 +56,9 @@
     text-align: center;
 }
 
+.alert {
+  margin-top: 20px;
+}
 
 #mouselab-score, #mouselab-moves #mouselab-ghost-score{
   font-weight: bold;
@@ -63,7 +66,6 @@
 
 .center {
   text-align: center;
-  margin-top: 200px;
   margin-bottom: auto;
 }
 
@@ -84,6 +86,10 @@ img.display {
     max-width: 700px;
 }
 
+.centered {
+  margin: auto;
+  position: relative;
+}
 
 /* Center the loader */
 #load-icon {
@@ -151,8 +157,8 @@ body {
     font-size: 13pt;
 }
 
-h1 {
-    margin-top: 0px;
+h1 h2 h3 h4 {
+  margin-top: 0px;
 }
 
 

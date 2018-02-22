@@ -115,7 +115,10 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @moveEnergy=0
         @startScore=0
 
-        @demo=null
+        @actions=null
+        @clicks=null
+        @pid=null
+
         @allowSimulation=false
         @revealRewards=true
         @training=false
@@ -140,6 +143,10 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         lowerMessage='&nbsp;'
       } = config
 
+      if @pid?
+        @showParticipant = true
+        centerMessage = "Participant #{@pid}"
+
       LOG_INFO 'NAME', @name
       SIZE = size
 
@@ -156,6 +163,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
           @_block.energyLeft = @energyLimit
       else
         leftMessage = "Round #{@_block.trialCount + 1}/#{@_block.timeline.length}"
+        # leftMessage = "Round #{@_block.trialCount + 1}/#{@_block.timeline.length}"
 
       @data =
         stateRewards: @stateRewards
@@ -260,23 +268,18 @@ jsPsych.plugins['mouselab-mdp'] = do ->
 
     runDemo: () =>
       @timeLeft = 1
-
-      i = 0
-      interval = ifvisible.onEvery 1, =>
-        if ifvisible.now()
-          a = @actions[i]
-          if @stateRewards[a]?
-            console.log 'click', a.state
-            @clickState @states[a.state], a.state
-          else
-            s = _.last @data.path
-            console.log 'path', @data.path,
-            console.log 'move', a.state, @state2move[a.state]
-            @handleKey s, @state2move[a.state]
-          i += 1
-          if i is actions.length
-            do interval.stop
-            # window.clearInterval ID
+      console.log 'runDemo'
+      for c in @clicks
+        await sleep 1000
+        console.log 'click', c
+        @clickState @states[c], c
+        @canvas.renderAll()
+      
+      for a in @actions
+        await sleep 700
+        s = _.last @data.path
+        @handleKey s, a
+          
 
     startTimer: =>
       @timeLeft = @minTime
@@ -503,17 +506,18 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @checkFinished()
         return
 
-      # Start key listener.
-      @keyListener = jsPsych.pluginAPI.getKeyboardResponse
-        valid_responses: keys
-        rt_method: 'date'
-        persist: false
-        allow_held_key: false
-        callback_function: (info) =>
-          action = @invKeys[info.key]
-          LOG_DEBUG 'key', info.key
-          @data.rt.push info.rt
-          @handleKey s, action
+      unless mdp.showParticipant
+        # Start key listener.
+        @keyListener = jsPsych.pluginAPI.getKeyboardResponse
+          valid_responses: keys
+          rt_method: 'date'
+          persist: false
+          allow_held_key: false
+          callback_function: (info) =>
+            action = @invKeys[info.key]
+            LOG_DEBUG 'key', info.key
+            @data.rt.push info.rt
+            @handleKey s, action
 
     addScore: (v) =>
       @data.score += v
@@ -561,6 +565,9 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @initTime = Date.now()
         @arrive @initial
       )
+      console.log "RUN #{@pid}"
+      if @showParticipant
+        @runDemo()
     # Draw object on the canvas.
     draw: (obj) =>
       @canvas.add obj
@@ -674,10 +681,11 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       mdp.canvas.add(@circle)
       mdp.canvas.add(@label)
       
-      @circle.on('mousedown', => mdp.clickState this, @name)
-      @circle.on('mouseover', => mdp.mouseoverState this, @name)
-      @circle.on('mouseout', => mdp.mouseoutState this, @name)
       @setLabel conf.label
+      unless mdp.showParticipant
+        @circle.on('mousedown', => mdp.clickState this, @name)
+        @circle.on('mouseover', => mdp.mouseoverState this, @name)
+        @circle.on('mouseout', => mdp.mouseoutState this, @name)
 
     setLabel: (txt, conf={}) ->
       LOG_DEBUG 'setLabel', txt
