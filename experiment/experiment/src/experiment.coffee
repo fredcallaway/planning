@@ -1,6 +1,6 @@
 # coffeelint: disable=max_line_length, indentation
 
-DEBUG = no
+DEBUG = yes
 TALK = no
 SHOW_PARTICIPANT = false
 
@@ -80,8 +80,8 @@ $(window).on 'load', ->
       id = "#{PARAMS.branching}_#{PARAMS.variance}"
     else
       id = "#{PARAMS.branching}"
-    STRUCTURE = loadJson "static/json/structure/#{id}.json"
-    TRIALS = loadJson "static/json/rewards/#{id}.json"
+    STRUCTURE = loadJson "static/json/structure/312.json"
+    TRIALS = loadJson "static/json/mcrl_trials/increasing.json"
     console.log "loaded #{TRIALS?.length} trials"
 
     getTrials = do ->
@@ -431,7 +431,7 @@ initializeExperiment = ->
     stateClickCost: PARAMS.inspectCost
     timeline: switch
       when SHOW_PARTICIPANT then DEMO_TRIALS
-      when DEBUG then getTrials 3
+      when DEBUG then TRIALS.slice(0, 3)
       else getTrials 30
     startScore: 50
     
@@ -495,9 +495,9 @@ initializeExperiment = ->
       test
     ]
     when DEBUG then [
-      train
+      # train
       # quiz
-      pre_test
+      # pre_test
       test
       verbal_responses
       finish

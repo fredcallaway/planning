@@ -14,6 +14,7 @@ TIME_LEFT = undefined
 
 jsPsych.plugins['mouselab-mdp'] = do ->
 
+
   PRINT = (args...) -> console.log args...
   NULL = (args...) -> null
   LOG_INFO = PRINT
@@ -126,6 +127,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @timeLimit=null
         @minTime=null
         @energyLimit=null
+        @qs=null
 
         # @transition=null  # function `(s0, a, s1, r) -> null` called after each transition
         @keys=KEYS  # mapping from actions to keycodes
@@ -258,6 +260,15 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       @waitMessage.hide()
       @defaultLowerMessage = lowerMessage
 
+      # feedback element
+      $('#jspsych-target').append """
+      <div id="mdp-feedback" class="modal">
+        <div id="mdp-feedback-content" class="modal-content">
+          <h3>Default</h3>
+        </div>
+      </div>
+      """
+
       mdp = this
       LOG_INFO 'new MouselabMDP', this
       @invKeys = _.invert @keys
@@ -370,6 +381,12 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         r = @stateRewards[s1]
       return [r, s1]
 
+    encodeBelief: =>
+      b = _.values(@states)
+        .map((g) => g.label.text or '_')
+      b[0] = 0  # first state is known to be 0
+      return b.join(' ')
+
     getReward: (s0, a, s1) =>
       if @stateRewards?
         @stateRewards[s1]
@@ -377,6 +394,8 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @graph[s0][a]
 
     move: (s0, a, s1) =>
+      unless @moved
+        await @showFeedback @stateRewards.length
       @moved = true
       if @freeze
         LOG_INFO 'freeze!'
@@ -408,7 +427,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
           @arrive s1
 
     clickState: (g, s) =>
-      LOG_DEBUG "clickState #{s}"
+      LOG_INFO "clickState #{s}"
       if @moved
         @lowerMessage.html "<b>You can't use the node inspector after moving!</b>"
         @lowerMessage.css 'color', '#FC4754'
@@ -421,6 +440,8 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @lowerMessage.html '<b>Nice job! You can click on more nodes or start moving.</b>'
         @lowerMessage.css 'color', '#000'
 
+      await @showFeedback s # Note: this must be called before g.setLabel r
+
       if @stateLabels and @stateDisplay is 'click' and not g.label.text
         @addScore -@stateClickCost
         @recordQuery 'click', 'state', s
@@ -429,11 +450,31 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         if @clickDelay
           @freeze = true
           g.setLabel '...'
-          delay @clickDelay, =>
-            @freeze = false
-            g.setLabel r
-            @canvas.renderAll()
-        else g.setLabel r
+          await sleep @clickDelay()
+          @freeze = false
+        g.setLabel r
+        @canvas.renderAll()
+
+    showFeedback: (action) =>
+      console.log "showFeedback #{action}"
+      q = @qs[@encodeBelief()]
+      console.log 'q', q
+
+      msg = """
+        Your action: #{q[action]}<br>
+        Best action: #{argmax q}
+      """
+
+      @freeze = true
+      $('#mdp-feedback').show()
+      $('#mdp-feedback-content')
+        .html msg
+
+      await sleep 2000
+      @freeze = false
+      $('#mdp-feedback').hide()
+
+
 
     mouseoverState: (g, s) =>
       # LOG_DEBUG "mouseoverState #{s}"
