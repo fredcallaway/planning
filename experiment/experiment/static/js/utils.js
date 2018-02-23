@@ -45,9 +45,9 @@ check = function(name, val) {
 };
 
 argmax = function(obj) {
-  return _.chain(x).keys().max(s(() => {
-    return x[s];
-  })).value();
+  return _.chain(obj).keys().max((s) => {
+    return obj[s];
+  }).value();
 };
 
 sleep = function(ms) {

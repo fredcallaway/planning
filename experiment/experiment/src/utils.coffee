@@ -24,7 +24,7 @@ check = (name, val) ->
 
 
 argmax = (obj) ->
-  _.chain(x).keys().max(s => x[s]).value()
+  _.chain(obj).keys().max((s) => obj[s]).value()
 
 sleep = (ms) ->
   new Promise (resolve) ->
