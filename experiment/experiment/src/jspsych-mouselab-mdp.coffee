@@ -468,7 +468,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       strictness = 2
       loss = v - qs[action]
       delay = Math.round(strictness * loss)
-      oldLowerMessage = @lowerMessage.html()
+      oldCenterMessage = @centerMessage.html()
 
       if @termAction in optimal
         msg = """
@@ -482,7 +482,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
           @states[a].circle.set('fill', '#49f')
         @canvas.renderAll()
 
-      @lowerMessage.html """
+      @centerMessage.html """
         #{msg}<br>
         Please wait #{delay} seconds.
       """
@@ -497,7 +497,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       await sleep delay * 1000
       
       # Reset.
-      @lowerMessage.html oldLowerMessage
+      @centerMessage.html oldCenterMessage
       @freeze = false
       unless @termAction in optimal
         for s in optimal
