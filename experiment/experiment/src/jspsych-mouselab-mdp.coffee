@@ -462,8 +462,11 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       v = (_.max qs)
       console.log 'v', v
       optimal = (a for a, q of qs when q is v)
-      for s in optimal
-        @states[s].circle.set('fill', '#49f')
+      for a in optimal
+        if a is @states.length
+          # TODO handle terminal action
+        else
+          @states[s].circle.set('fill', '#49f')
       @canvas.renderAll()
 
       msg = """

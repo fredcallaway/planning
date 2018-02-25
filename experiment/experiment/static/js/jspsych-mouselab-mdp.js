@@ -524,8 +524,13 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
         return results;
       })();
       for (i = 0, len = optimal.length; i < len; i++) {
-        s = optimal[i];
-        this.states[s].circle.set('fill', '#49f');
+        a = optimal[i];
+        if (a === this.states.length) {
+
+        } else {
+          // TODO handle terminal action
+          this.states[s].circle.set('fill', '#49f');
+        }
       }
       this.canvas.renderAll();
       msg = `Your action: ${q[action]}<br>\nBest action: ${argmax(q)}`;
