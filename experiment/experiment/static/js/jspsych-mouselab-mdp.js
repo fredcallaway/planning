@@ -516,7 +516,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
         results = [];
         for (a in qs) {
           q = qs[a];
-          if (q === v) {
+          if (v - q < .01) {
             results.push(a);
           }
         }
@@ -833,6 +833,8 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       this.name = name;
       left = (left + 0.5) * SIZE;
       top = (top + 0.5) * SIZE;
+      this.left = left;
+      this.top = top;
       conf = {
         left: left,
         top: top,
@@ -846,16 +848,16 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       // Thus, we must initialize the label with a placeholder, then
       // set it to the proper value afterwards.
       this.circle = new fabric.Circle(conf);
-      this.label = new Text('----------', left, top, {
-        fontSize: SIZE / 4,
-        fill: '#44d'
-      });
+      this.label = {};
+      // @label = new Text '----------', left, top,
+      //   fontSize: SIZE / 4
+      //   fill: '#44d'
       this.radius = this.circle.radius;
       this.left = this.circle.left;
       this.top = this.circle.top;
       mdp.canvas.add(this.circle);
-      mdp.canvas.add(this.label);
-      this.setLabel(conf.label);
+      
+      // @setLabel conf.label
       if (!mdp.showParticipant) {
         this.circle.on('mousedown', () => {
           return mdp.clickState(this, this.name);
@@ -871,6 +873,11 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
 
     setLabel(txt, conf = {}) {
       var post, pre;
+      this.label = new Text('----------', this.left, this.top, {
+        fontSize: SIZE / 4,
+        fill: '#44d'
+      });
+      mdp.canvas.add(this.label);
       LOG_DEBUG('setLabel', txt);
       ({pre = '', post = ''} = conf);
       // LOG_DEBUG "setLabel #{txt}"

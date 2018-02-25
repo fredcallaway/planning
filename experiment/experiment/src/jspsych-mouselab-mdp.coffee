@@ -459,7 +459,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       console.log 'showFeedback'
       qs = @qs[@encodeBelief()]
       v = (_.max qs)
-      optimal = (a for a, q of qs when q is v)
+      optimal = (a for a, q of qs when v - q < .01)
 
       if action in optimal
         return
@@ -727,6 +727,8 @@ jsPsych.plugins['mouselab-mdp'] = do ->
     constructor: (@name, left, top, config={}) ->
       left = (left + 0.5) * SIZE
       top = (top + 0.5) * SIZE
+      @left = left
+      @top = top
       conf =
         left: left
         top: top
@@ -740,24 +742,28 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       # Thus, we must initialize the label with a placeholder, then
       # set it to the proper value afterwards.
       @circle = new fabric.Circle conf
-      @label = new Text '----------', left, top,
-        fontSize: SIZE / 4
-        fill: '#44d'
+      @label = {}
+      # @label = new Text '----------', left, top,
+      #   fontSize: SIZE / 4
+      #   fill: '#44d'
 
       @radius = @circle.radius
       @left = @circle.left
       @top = @circle.top
 
       mdp.canvas.add(@circle)
-      mdp.canvas.add(@label)
       
-      @setLabel conf.label
+      # @setLabel conf.label
       unless mdp.showParticipant
         @circle.on('mousedown', => mdp.clickState this, @name)
         @circle.on('mouseover', => mdp.mouseoverState this, @name)
         @circle.on('mouseout', => mdp.mouseoutState this, @name)
 
     setLabel: (txt, conf={}) ->
+      @label = new Text '----------', @left, @top,
+        fontSize: SIZE / 4
+        fill: '#44d'
+      mdp.canvas.add(@label)
       LOG_DEBUG 'setLabel', txt
       {
         pre=''
