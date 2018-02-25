@@ -506,15 +506,39 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
     }
 
     async showFeedback(action) {
-      var msg, q;
+      var a, i, j, len, len1, msg, optimal, q, qs, s, v;
       console.log(`showFeedback ${action}`);
-      q = this.qs[this.encodeBelief()];
-      console.log('q', q);
+      qs = this.qs[this.encodeBelief()];
+      console.log('q', qs);
+      v = _.max(qs);
+      console.log('v', v);
+      optimal = (function() {
+        var results;
+        results = [];
+        for (a in qs) {
+          q = qs[a];
+          if (q === v) {
+            results.push(a);
+          }
+        }
+        return results;
+      })();
+      for (i = 0, len = optimal.length; i < len; i++) {
+        s = optimal[i];
+        this.states[s].circle.set('fill', '#49f');
+      }
+      this.canvas.renderAll();
       msg = `Your action: ${q[action]}<br>\nBest action: ${argmax(q)}`;
-      this.freeze = true;
-      $('#mdp-feedback').show();
-      $('#mdp-feedback-content').html(msg);
+      // @freeze = true
+      // $('#mdp-feedback').show()
+      // $('#mdp-feedback-content')
+      //   .html msg
       await sleep(2000);
+      for (j = 0, len1 = optimal.length; j < len1; j++) {
+        s = optimal[j];
+        this.states[s].circle.set('fill', '#bbb');
+      }
+      this.canvas.renderAll();
       this.freeze = false;
       return $('#mdp-feedback').hide();
     }
@@ -841,6 +865,10 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
         this.label.setText('');
       }
       return this.dirty = true;
+    }
+
+    higlight() {
+      return this.circle.set('color', '#49f');
     }
 
   };

@@ -457,20 +457,29 @@ jsPsych.plugins['mouselab-mdp'] = do ->
 
     showFeedback: (action) =>
       console.log "showFeedback #{action}"
-      q = @qs[@encodeBelief()]
-      console.log 'q', q
+      qs = @qs[@encodeBelief()]
+      console.log 'q', qs
+      v = (_.max qs)
+      console.log 'v', v
+      optimal = (a for a, q of qs when q is v)
+      for s in optimal
+        @states[s].circle.set('fill', '#49f')
+      @canvas.renderAll()
 
       msg = """
         Your action: #{q[action]}<br>
         Best action: #{argmax q}
       """
 
-      @freeze = true
-      $('#mdp-feedback').show()
-      $('#mdp-feedback-content')
-        .html msg
+      # @freeze = true
+      # $('#mdp-feedback').show()
+      # $('#mdp-feedback-content')
+      #   .html msg
 
       await sleep 2000
+      for s in optimal
+        @states[s].circle.set('fill', '#bbb')
+      @canvas.renderAll()
       @freeze = false
       $('#mdp-feedback').hide()
 
@@ -741,6 +750,11 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       else
         @label.setText ''
       @dirty = true
+
+    higlight: ->
+      @circle.set('color', '#49f')
+
+
 
 
   class Edge
