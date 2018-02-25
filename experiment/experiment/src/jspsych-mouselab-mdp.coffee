@@ -465,26 +465,32 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         return
 
       @freeze = true
-      strictness = 2
+      strictness = 1
       loss = v - qs[action]
-      delay = Math.round(strictness * loss)
-      oldLowerMessage = @lowerMessage.html()
+      if loss > 0
+        delay = 2 + Math.round(strictness * loss)
+      else
+        delay = 0
+        
+      oldFeedbackMessage = @prompt.html()
 
       if @termAction in optimal
-        msg = """
+        msg = """        
           You shouldn't have inspected any more nodes.
         """
       else
-        msg = """
-          You should have inspected one of the highlighted nodes.
+        msg = """          
+          You should have inspected one of the highlighted nodes.          
         """
         for a in optimal
           @states[a].circle.set('fill', '#49f')
         @canvas.renderAll()
 
-      @lowerMessage.html """
+      @prompt.html """
+        <div align='center' style='color:#FF0000; font-weight:bold; font-size:18pt'>
         #{msg}<br>
         Please wait #{delay} seconds.
+        </div>
       """
 
 
@@ -497,7 +503,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       await sleep delay * 1000
       
       # Reset.
-      @lowerMessage.html oldLowerMessage
+      @prompt.html oldFeedbackMessage
       @freeze = false
       unless @termAction in optimal
         for s in optimal

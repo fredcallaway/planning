@@ -443,7 +443,7 @@ initializeExperiment = ->
       """
 
     questions: [
-        'How did you decide where to click??'
+        'How did you decide where to click?'
         'How did you decide where NOT to click?'
         'How did you decide when to stop clicking?'
         'Where were you most likely to click at the beginning of each round?'
