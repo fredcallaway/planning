@@ -507,7 +507,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
     }
 
     async showFeedback(action) {
-      var a, delay, i, j, len, len1, loss, msg, oldCenterMessage, optimal, q, qs, ref, ref1, s, strictness, v;
+      var a, delay, i, j, len, len1, loss, msg, oldFeedbackMessage, optimal, q, qs, ref, ref1, s, strictness, v;
       console.log('showFeedback');
       qs = this.qs[this.encodeBelief()];
       v = _.max(qs);
@@ -529,18 +529,18 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       strictness = 2;
       loss = v - qs[action];
       delay = Math.round(strictness * loss);
-      oldCenterMessage = this.centerMessage.html();
+      oldFeedbackMessage = this.prompt.html();
       if (ref = this.termAction, indexOf.call(optimal, ref) >= 0) {
         msg = "You shouldn't have inspected any more nodes.";
       } else {
-        msg = "You should have inspected one of the highlighted nodes.";
+        msg = "You should have inspected one of the highlighted nodes.          ";
         for (i = 0, len = optimal.length; i < len; i++) {
           a = optimal[i];
           this.states[a].circle.set('fill', '#49f');
         }
         this.canvas.renderAll();
       }
-      this.centerMessage.html(`${msg}<br>\nPlease wait ${delay} seconds.`);
+      this.prompt.html(`<div align='center' style='color:#FF0000; font-weight:bold; font-size:18pt'>\n${msg}<br>\nPlease wait ${delay} seconds.\n</div>`);
       // @freeze = true
       // $('#mdp-feedback').show()
       // $('#mdp-feedback-content')
@@ -549,7 +549,7 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       await sleep(delay * 1000);
       
       // Reset.
-      this.centerMessage.html(oldCenterMessage);
+      this.prompt.html(oldFeedbackMessage);
       this.freeze = false;
       if (ref1 = this.termAction, indexOf.call(optimal, ref1) < 0) {
         for (j = 0, len1 = optimal.length; j < len1; j++) {
