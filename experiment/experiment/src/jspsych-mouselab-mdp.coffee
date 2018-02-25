@@ -465,9 +465,13 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         return
 
       @freeze = true
-      strictness = 2
+      strictness = 1
       loss = v - qs[action]
-      delay = Math.round(strictness * loss)
+      if loss > 0
+        delay = 2 + Math.round(strictness * loss)
+      else
+        delay = 0
+        
       oldFeedbackMessage = @prompt.html()
 
       if @termAction in optimal

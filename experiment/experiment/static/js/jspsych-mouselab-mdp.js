@@ -526,9 +526,13 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
         return;
       }
       this.freeze = true;
-      strictness = 2;
+      strictness = 1;
       loss = v - qs[action];
-      delay = Math.round(strictness * loss);
+      if (loss > 0) {
+        delay = 2 + Math.round(strictness * loss);
+      } else {
+        delay = 0;
+      }
       oldFeedbackMessage = this.prompt.html();
       if (ref = this.termAction, indexOf.call(optimal, ref) >= 0) {
         msg = "You shouldn't have inspected any more nodes.";
