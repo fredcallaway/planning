@@ -145,11 +145,11 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         lowerMessage='&nbsp;'
       } = config
 
+      @termAction = "#{@stateRewards.length}"
       if @pid?
         @showParticipant = true
         centerMessage = "Participant #{@pid}"
 
-      LOG_INFO 'NAME', @name
       SIZE = size
 
       _.extend this, config
@@ -395,7 +395,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
 
     move: (s0, a, s1) =>
       unless @moved
-        await @showFeedback @stateRewards.length
+        await @showFeedback @termAction
       @moved = true
       if @freeze
         LOG_INFO 'freeze!'
@@ -440,9 +440,9 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @lowerMessage.html '<b>Nice job! You can click on more nodes or start moving.</b>'
         @lowerMessage.css 'color', '#000'
 
-      await @showFeedback s # Note: this must be called before g.setLabel r
 
       if @stateLabels and @stateDisplay is 'click' and not g.label.text
+        await @showFeedback s # Note: this must be called before g.setLabel r
         @addScore -@stateClickCost
         @recordQuery 'click', 'state', s
         @spendEnergy @clickEnergy
@@ -456,35 +456,53 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @canvas.renderAll()
 
     showFeedback: (action) =>
-      console.log "showFeedback #{action}"
+      console.log 'showFeedback'
       qs = @qs[@encodeBelief()]
-      console.log 'q', qs
       v = (_.max qs)
-      console.log 'v', v
       optimal = (a for a, q of qs when q is v)
-      for a in optimal
-        if a is @states.length
-          # TODO handle terminal action
-        else
-          @states[s].circle.set('fill', '#49f')
-      @canvas.renderAll()
 
-      msg = """
-        Your action: #{q[action]}<br>
-        Best action: #{argmax q}
+      if action in optimal
+        return
+
+      @freeze = true
+      strictness = 2
+      loss = v - qs[action]
+      delay = Math.round(strictness * loss)
+      oldLowerMessage = @lowerMessage.html()
+
+      if @termAction in optimal
+        msg = """
+          You shouldn't have inspected any more nodes.
+        """
+      else
+        msg = """
+          You should have inspected one of the highlighted nodes.
+        """
+        for a in optimal
+          @states[a].circle.set('fill', '#49f')
+        @canvas.renderAll()
+
+      @lowerMessage.html """
+        #{msg}<br>
+        Please wait #{delay} seconds.
       """
+
 
       # @freeze = true
       # $('#mdp-feedback').show()
       # $('#mdp-feedback-content')
       #   .html msg
+      # $('#mdp-feedback').hide()
 
-      await sleep 2000
-      for s in optimal
-        @states[s].circle.set('fill', '#bbb')
-      @canvas.renderAll()
+      await sleep delay * 1000
+      
+      # Reset.
+      @lowerMessage.html oldLowerMessage
       @freeze = false
-      $('#mdp-feedback').hide()
+      unless @termAction in optimal
+        for s in optimal
+          @states[s].circle.set('fill', '#bbb')
+        @canvas.renderAll()
 
 
 
@@ -618,7 +636,6 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @initTime = Date.now()
         @arrive @initial
       )
-      console.log "RUN #{@pid}"
       if @showParticipant
         @runDemo()
     # Draw object on the canvas.

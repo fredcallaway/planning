@@ -380,7 +380,7 @@ initializeExperiment = function() {
         case !SHOW_PARTICIPANT:
           return DEMO_TRIALS;
         case !DEBUG:
-          return TRIALS.slice(0, 3);
+          return TRIALS.slice(6, 8);
         default:
           return getTrials(30);
       }
