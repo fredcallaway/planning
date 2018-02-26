@@ -253,8 +253,17 @@ initializeExperiment = ->
    divider_training_test  = new TextBlock
     text: ->
       SCORE = 0
-      "<div style='text-align: center;'> Congratulations! You have completed the training block. <br/> Press <code>space</code> to start the test block.</div>"
-        
+      "<div style='text-align: center;'> Congratulations! You have completed the training block. <br/>      
+       <br/> Press <code>space</code> to start the test block.</div>"
+
+   test_block_intro  = new TextBlock
+    text: ->
+      SCORE = 0
+      """ 
+    <div style='text-align: center;'> Welcome to the test block! Here, you can use what you have learned to earn a bonus. Concretely, #{bonus_text('long')}</div>
+      """
+    
+    
    divider_intro_training  = new TextBlock
     text: ->
       SCORE = 0
@@ -531,6 +540,7 @@ initializeExperiment = ->
       divider_intro_training    
       training
       divider_training_test
+      test_block_intro
       # quiz
       # pre_test
       post_test

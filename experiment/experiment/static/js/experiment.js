@@ -147,7 +147,7 @@ createStartButton = function() {
 };
 
 initializeExperiment = function() {
-  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, divider_intro_training, divider_training_test, experiment_timeline, finish, fullMessage, img, nodeValuesDescription, post_test, pre_test, prompt_resubmit, quiz, reprompt, reset_score, save_data, talk_demo, text, train_basic1, train_final, train_inspect_cost, train_inspector, training, verbal_responses;
+  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, divider_intro_training, divider_training_test, experiment_timeline, finish, fullMessage, img, nodeValuesDescription, post_test, pre_test, prompt_resubmit, quiz, reprompt, reset_score, save_data, talk_demo, test_block_intro, text, train_basic1, train_final, train_inspect_cost, train_inspector, training, verbal_responses;
   $('#jspsych-target').html('');
   console.log('INITIALIZE EXPERIMENT');
   //  ======================== #
@@ -283,7 +283,13 @@ initializeExperiment = function() {
   divider_training_test = new TextBlock({
     text: function() {
       SCORE = 0;
-      return "<div style='text-align: center;'> Congratulations! You have completed the training block. <br/> Press <code>space</code> to start the test block.</div>";
+      return "<div style='text-align: center;'> Congratulations! You have completed the training block. <br/> <br/> Press <code>space</code> to start the test block.</div>";
+    }
+  });
+  test_block_intro = new TextBlock({
+    text: function() {
+      SCORE = 0;
+      return `<div style='text-align: center;'> Welcome to the test block! Here, you can use what you have learned to earn a bonus. Concretely, ${bonus_text('long')}</div>`;
     }
   });
   divider_intro_training = new TextBlock({
@@ -488,6 +494,7 @@ initializeExperiment = function() {
           divider_intro_training,
           training,
           divider_training_test,
+          test_block_intro,
           // quiz
           // pre_test
           post_test,
