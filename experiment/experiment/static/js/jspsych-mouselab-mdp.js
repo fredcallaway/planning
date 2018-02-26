@@ -533,27 +533,30 @@ jsPsych.plugins['mouselab-mdp'] = (function() {
       } else {
         delay = 0;
       }
-      oldFeedbackMessage = this.prompt.html();
-      if (ref = this.termAction, indexOf.call(optimal, ref) >= 0) {
-        msg = "You shouldn't have inspected any more nodes.";
-      } else {
-        msg = "You should have inspected one of the highlighted nodes.          ";
-        for (i = 0, len = optimal.length; i < len; i++) {
-          a = optimal[i];
-          this.states[a].circle.set('fill', '#49f');
+      if (this._block.show_feedback) {
+        oldFeedbackMessage = this.prompt.html();
+        if (ref = this.termAction, indexOf.call(optimal, ref) >= 0) {
+          msg = "You shouldn't have inspected any more nodes.";
+        } else {
+          msg = "You should have inspected one of the highlighted nodes.          ";
+          for (i = 0, len = optimal.length; i < len; i++) {
+            a = optimal[i];
+            this.states[a].circle.set('fill', '#49f');
+          }
+          this.canvas.renderAll();
         }
-        this.canvas.renderAll();
+        this.prompt.html(`<div align='center' style='color:#FF0000; font-weight:bold; font-size:18pt'>\n${msg}<br>\nPlease wait ${delay} seconds.\n</div>`);
+        // @freeze = true
+        // $('#mdp-feedback').show()
+        // $('#mdp-feedback-content')
+        //   .html msg
+        // $('#mdp-feedback').hide()
+        await sleep(delay * 1000);
+        // Reset.
+        this.prompt.html(oldFeedbackMessage);
+      } else {
+        console.log('no');
       }
-      this.prompt.html(`<div align='center' style='color:#FF0000; font-weight:bold; font-size:18pt'>\n${msg}<br>\nPlease wait ${delay} seconds.\n</div>`);
-      // @freeze = true
-      // $('#mdp-feedback').show()
-      // $('#mdp-feedback-content')
-      //   .html msg
-      // $('#mdp-feedback').hide()
-      await sleep(delay * 1000);
-      
-      // Reset.
-      this.prompt.html(oldFeedbackMessage);
       this.freeze = false;
       if (ref1 = this.termAction, indexOf.call(optimal, ref1) < 0) {
         for (j = 0, len1 = optimal.length; j < len1; j++) {

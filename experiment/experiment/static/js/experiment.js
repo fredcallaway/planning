@@ -147,7 +147,7 @@ createStartButton = function() {
 };
 
 initializeExperiment = function() {
-  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, experiment_timeline, finish, fullMessage, img, nodeValuesDescription, pre_test, prompt_resubmit, quiz, reprompt, reset_score, save_data, talk_demo, test, text, train, train_basic1, train_basic2, train_final, train_hidden, train_inspect_cost, train_inspector, verbal_responses;
+  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, divider_training_test, experiment_timeline, finish, fullMessage, img, nodeValuesDescription, post_test, pre_test, prompt_resubmit, quiz, reprompt, reset_score, save_data, talk_demo, text, train_basic1, train_basic2, train_final, train_hidden, train_inspect_cost, train_inspector, training, verbal_responses;
   $('#jspsych-target').html('');
   console.log('INITIALIZE EXPERIMENT');
   //  ======================== #
@@ -277,7 +277,13 @@ initializeExperiment = function() {
   divider = new TextBlock({
     text: function() {
       SCORE = 0;
-      return "<div style='text-align: center;'>Press <code>space</code> to continue.</div>";
+      return "<div style='text-align: center;'> Press <code>space</code> to continue.</div>";
+    }
+  });
+  divider_training_test = new TextBlock({
+    text: function() {
+      SCORE = 0;
+      return "<div style='text-align: center;'> Congratulations! You have completed the training block. <br/> Press <code>space</code> to start the test block.</div>";
     }
   });
   train_basic1 = new MouselabBlock({
@@ -348,10 +354,21 @@ initializeExperiment = function() {
     lowerMessage: fullMessage,
     timeline: getTrials(5)
   });
-  train = new Block({
-    training: true,
-    timeline: [train_basic1, divider, train_basic2, divider, train_hidden, divider, train_inspector, divider, train_inspect_cost, divider, train_final]
-  });
+  //  train = new Block
+  //    training: true
+  //    timeline: [
+  //      train_basic1
+  //       divider    
+  //      train_basic2    
+  //      divider
+  //      train_hidden
+  //      divider
+  //      train_inspector
+  //       divider
+  //      train_inspect_cost
+  //      divider
+  //       train_final
+  //    ]
   quiz = new Block({
     preamble: function() {
       return markdown("# Quiz\n");
@@ -370,9 +387,28 @@ initializeExperiment = function() {
       return markdown(`# Training Completed\n\nWell done! You've completed the training phase and you're ready to\nplay *Web of Cash* for real. You will have **${test.timeline.length}\nrounds** to make as much money as you can. Remember, ${bonus_text()}\n\nOne more thing: **You must spend *at least* 7 seconds on each round.**\nIf you finish a round early, you'll have to wait until 7 seconds have\npassed.\n\nTo thank you for your work so far, we'll start you off with **$50**.\nGood luck!`);
     }
   });
-  test = new MouselabBlock({
+  post_test = new MouselabBlock({
     minTime: 7,
+    show_feedback: false,
     blockName: 'test',
+    stateDisplay: 'click',
+    stateClickCost: PARAMS.inspectCost,
+    timeline: (function() {
+      switch (false) {
+        case !SHOW_PARTICIPANT:
+          return DEMO_TRIALS;
+        case !DEBUG:
+          return TRIALS.slice(6, 8);
+        default:
+          return getTrials(30);
+      }
+    })(),
+    startScore: 50
+  });
+  training = new MouselabBlock({
+    minTime: 7,
+    show_feedback: true,
+    blockName: 'training',
     stateDisplay: 'click',
     stateClickCost: PARAMS.inspectCost,
     timeline: (function() {
@@ -427,10 +463,15 @@ initializeExperiment = function() {
       case !SHOW_PARTICIPANT:
         return [test];
       case !DEBUG:
-        // train
-        // quiz
-        // pre_test
-        return [test, verbal_responses, finish];
+        return [
+          training,
+          divider_training_test,
+          // quiz
+          // pre_test
+          post_test,
+          verbal_responses,
+          finish
+        ];
       case !TALK:
         return [talk_demo];
       default:

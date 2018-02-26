@@ -456,6 +456,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @canvas.renderAll()
 
     showFeedback: (action) =>
+              
       console.log 'showFeedback'
       qs = @qs[@encodeBelief()]
       v = (_.max qs)
@@ -471,47 +472,52 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         delay = 2 + Math.round(strictness * loss)
       else
         delay = 0
-        
-      oldFeedbackMessage = @prompt.html()
-
-      if @termAction in optimal
-        msg = """        
-          You shouldn't have inspected any more nodes.
-        """
-      else
-        msg = """          
-          You should have inspected one of the highlighted nodes.          
-        """
-        for a in optimal
-          @states[a].circle.set('fill', '#49f')
-        @canvas.renderAll()
-
-      @prompt.html """
-        <div align='center' style='color:#FF0000; font-weight:bold; font-size:18pt'>
-        #{msg}<br>
-        Please wait #{delay} seconds.
-        </div>
-      """
-
-
-      # @freeze = true
-      # $('#mdp-feedback').show()
-      # $('#mdp-feedback-content')
-      #   .html msg
-      # $('#mdp-feedback').hide()
-
-      await sleep delay * 1000
       
-      # Reset.
-      @prompt.html oldFeedbackMessage
+    
+      if @_block.show_feedback
+          oldFeedbackMessage = @prompt.html()
+
+          if @termAction in optimal
+            msg = """        
+              You shouldn't have inspected any more nodes.
+            """
+          else
+            msg = """          
+              You should have inspected one of the highlighted nodes.          
+            """
+            for a in optimal
+              @states[a].circle.set('fill', '#49f')
+            @canvas.renderAll()
+
+          @prompt.html """
+            <div align='center' style='color:#FF0000; font-weight:bold; font-size:18pt'>
+            #{msg}<br>
+            Please wait #{delay} seconds.
+            </div>
+          """
+
+
+          # @freeze = true
+          # $('#mdp-feedback').show()
+          # $('#mdp-feedback-content')
+          #   .html msg
+          # $('#mdp-feedback').hide()
+
+          await sleep delay * 1000
+
+          # Reset.
+          @prompt.html oldFeedbackMessage
+      else
+            console.log 'no'
+
+             
       @freeze = false
       unless @termAction in optimal
         for s in optimal
           @states[s].circle.set('fill', '#bbb')
         @canvas.renderAll()
-
-
-
+ 
+            
     mouseoverState: (g, s) =>
       # LOG_DEBUG "mouseoverState #{s}"
       if @stateLabels and @stateDisplay is 'hover'

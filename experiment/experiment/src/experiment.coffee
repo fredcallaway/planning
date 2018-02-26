@@ -247,8 +247,15 @@ initializeExperiment = ->
   divider = new TextBlock
     text: ->
       SCORE = 0
-      "<div style='text-align: center;'>Press <code>space</code> to continue.</div>"
+      "<div style='text-align: center;'> Press <code>space</code> to continue.</div>"
 
+  
+   divider_training_test  = new TextBlock
+    text: ->
+      SCORE = 0
+      "<div style='text-align: center;'> Congratulations! You have completed the training block. <br/> Press <code>space</code> to start the test block.</div>"
+        
+        
   train_basic1 = new MouselabBlock
     blockName: 'train_basic'
     stateDisplay: 'always'
@@ -365,22 +372,24 @@ initializeExperiment = ->
     timeline: getTrials 5
 
 
-  train = new Block
-    training: true
-    timeline: [
-      train_basic1
-      divider    
-      train_basic2    
-      divider
-      train_hidden
-      divider
-      train_inspector
-      divider
-      train_inspect_cost
-      divider
-      train_final
-    ]
+#  train = new Block
+#    training: true
+#    timeline: [
+#      train_basic1
+#       divider    
+#      train_basic2    
+#      divider
+#      train_hidden
+#      divider
+#      train_inspector
+#       divider
+#      train_inspect_cost
+#      divider
+#       train_final
+#    ]
 
+
+    
   quiz = new Block
     preamble: -> markdown """
       # Quiz
@@ -424,8 +433,9 @@ initializeExperiment = ->
     """
 
 
-  test = new MouselabBlock
+  post_test = new MouselabBlock
     minTime: 7
+    show_feedback: false
     blockName: 'test'
     stateDisplay: 'click'
     stateClickCost: PARAMS.inspectCost
@@ -434,6 +444,19 @@ initializeExperiment = ->
       when DEBUG then TRIALS.slice(6, 8)
       else getTrials 30
     startScore: 50
+    
+  training = new MouselabBlock
+    minTime: 7
+    show_feedback: true
+    blockName: 'training'
+    stateDisplay: 'click'
+    stateClickCost: PARAMS.inspectCost
+    timeline: switch
+      when SHOW_PARTICIPANT then DEMO_TRIALS
+      when DEBUG then TRIALS.slice(6, 8)
+      else getTrials 30
+    startScore: 50
+    
     
   verbal_responses = new Block
     type: 'survey-text'
@@ -495,10 +518,11 @@ initializeExperiment = ->
       test
     ]
     when DEBUG then [
-      # train
+      training
+      divider_training_test
       # quiz
       # pre_test
-      test
+      post_test
       verbal_responses
       finish
     ]
