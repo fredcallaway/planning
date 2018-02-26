@@ -147,7 +147,7 @@ createStartButton = function() {
 };
 
 initializeExperiment = function() {
-  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, divider_training_test, experiment_timeline, finish, fullMessage, img, nodeValuesDescription, post_test, pre_test, prompt_resubmit, quiz, reprompt, reset_score, save_data, talk_demo, text, train_basic1, train_basic2, train_final, train_hidden, train_inspect_cost, train_inspector, training, verbal_responses;
+  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, divider_intro_training, divider_training_test, experiment_timeline, finish, fullMessage, img, nodeValuesDescription, post_test, pre_test, prompt_resubmit, quiz, reprompt, reset_score, save_data, talk_demo, text, train_basic1, train_final, train_inspect_cost, train_inspector, training, verbal_responses;
   $('#jspsych-target').html('');
   console.log('INITIALIZE EXPERIMENT');
   //  ======================== #
@@ -286,6 +286,12 @@ initializeExperiment = function() {
       return "<div style='text-align: center;'> Congratulations! You have completed the training block. <br/> Press <code>space</code> to start the test block.</div>";
     }
   });
+  divider_intro_training = new TextBlock({
+    text: function() {
+      SCORE = 0;
+      return "<div style='text-align: center;'> Congratulations! You have completed the instructions. Next, you will enter a training block where you can practice planning, and a test block where you can use what you have learned to earn a bonus. <br/> Press <code>space</code> to start the training block.</div>";
+    }
+  });
   train_basic1 = new MouselabBlock({
     blockName: 'train_basic',
     stateDisplay: 'always',
@@ -293,26 +299,38 @@ initializeExperiment = function() {
       return markdown("## Web of Cash\n\nIn this HIT, you will play a game called *Web of Cash*. You will guide a\nmoney-loving spider through a spider web. When you land on a gray circle\n(a ***node***) the value of the node is added to your score.\n\nYou can move the spider with the arrow keys, but only in the direction\nof the arrows between the nodes. Go ahead, try it out!");
     },
     lowerMessage: 'Move with the arrow keys.',
-    timeline: getTrials(5)
-  });
-  train_basic2 = new MouselabBlock({
-    blockName: 'train_basic2',
-    stateDisplay: 'always',
-    prompt: function() {
-      return markdown(`## Some nodes are more important than others\n\n${nodeValuesDescription} Please take a look at the example below to see what this means.\n\nTry a few more rounds now!`);
-    },
-    lowerMessage: 'Move with the arrow keys.',
-    timeline: getTrials(5)
-  });
-  train_hidden = new MouselabBlock({
-    blockName: 'train_hidden',
     stateDisplay: 'never',
-    prompt: function() {
-      return markdown("## Hidden Information\n\nNice job! When you can see the values of each node, it's not too hard to\ntake the best possible path. Unfortunately, you can't always see the\nvalue of the nodes. Without this information, it's hard to make good\ndecisions. Try completing a few more rounds.");
-    },
-    lowerMessage: 'Move with the arrow keys.',
-    timeline: getTrials(5)
+    timeline: getTrials(1)
   });
+  
+  //   train_basic2 = new MouselabBlock
+  //    blockName: 'train_basic2'
+  //    stateDisplay: 'always'
+  //    prompt: ->
+  //      markdown """
+  //      ## Some nodes are more important than others
+
+  //{nodeValuesDescription} Please take a look at the example below to see what this means.
+
+  //      Try a few more rounds now!
+  //    """
+  //    lowerMessage: 'Move with the arrow keys.'
+  //    timeline: getTrials 5
+
+  //  train_hidden = new MouselabBlock
+  //    blockName: 'train_hidden'
+  //    stateDisplay: 'never'
+  //    prompt: ->
+  //      markdown """
+  //      ## Hidden Information
+
+  //      Nice job! When you can see the values of each node, it's not too hard to
+  //      take the best possible path. Unfortunately, you can't always see the
+  //      value of the nodes. Without this information, it's hard to make good
+  //      decisions. Try completing a few more rounds.
+  //    """
+  //    lowerMessage: 'Move with the arrow keys.'
+  //    timeline: getTrials 5
   train_inspector = new MouselabBlock({
     blockName: 'train_inspector',
     // special: 'trainClick'
@@ -322,7 +340,7 @@ initializeExperiment = function() {
       return markdown("## Node Inspector\n\nIt's hard to make good decision when you can't see what you're doing!\nFortunately, you have access to a ***node inspector*** which can reveal\nthe value of a node. To use the node inspector, simply click on a node.\n**Note:** you can only use the node inspector when you're on the first\nnode.\n\nTrying using the node inspector on a few nodes before making your first\nmove.");
     },
     // but the node inspector takes some time to work and you can only inspect one node at a time.
-    timeline: getTrials(5)
+    timeline: getTrials(1)
   });
   // lowerMessage: "<b>Click on the nodes to reveal their values.<b>"
   train_inspect_cost = new MouselabBlock({
@@ -332,7 +350,7 @@ initializeExperiment = function() {
     prompt: function() {
       return markdown(`## The price of information\n\nYou can use node inspector to gain information and make better\ndecisions. But, as always, there's a catch. Using the node inspector\ncosts $${PARAMS.inspectCost} per node. To maximize your score, you have\nto know when it's best to gather more information, and when it's time to\nact!`);
     },
-    timeline: getTrials(5)
+    timeline: getTrials(1)
   });
   bonus_text = function(long) {
     var s;
@@ -464,6 +482,10 @@ initializeExperiment = function() {
         return [test];
       case !DEBUG:
         return [
+          train_basic1,
+          train_inspector,
+          train_inspect_cost,
+          divider_intro_training,
           training,
           divider_training_test,
           // quiz

@@ -255,6 +255,12 @@ initializeExperiment = ->
       SCORE = 0
       "<div style='text-align: center;'> Congratulations! You have completed the training block. <br/> Press <code>space</code> to start the test block.</div>"
         
+   divider_intro_training  = new TextBlock
+    text: ->
+      SCORE = 0
+      "<div style='text-align: center;'> Congratulations! You have completed the instructions. Next, you will enter a training block where you can practice planning, and a test block where you can use what you have learned to earn a bonus. <br/> Press <code>space</code> to start the training block.</div>"
+
+        
         
   train_basic1 = new MouselabBlock
     blockName: 'train_basic'
@@ -271,37 +277,38 @@ initializeExperiment = ->
       of the arrows between the nodes. Go ahead, try it out!
     """
     lowerMessage: 'Move with the arrow keys.'
-    timeline: getTrials 5
+    stateDisplay: 'never'
+    timeline: getTrials 1
     
-  train_basic2 = new MouselabBlock
-    blockName: 'train_basic2'
-    stateDisplay: 'always'
-    prompt: ->
-      markdown """
-      ## Some nodes are more important than others
+#   train_basic2 = new MouselabBlock
+#    blockName: 'train_basic2'
+#    stateDisplay: 'always'
+#    prompt: ->
+#      markdown """
+#      ## Some nodes are more important than others
 
       #{nodeValuesDescription} Please take a look at the example below to see what this means.
 
-      Try a few more rounds now!
-    """
-    lowerMessage: 'Move with the arrow keys.'
-    timeline: getTrials 5
+#      Try a few more rounds now!
+#    """
+#    lowerMessage: 'Move with the arrow keys.'
+#    timeline: getTrials 5
 
   
-  train_hidden = new MouselabBlock
-    blockName: 'train_hidden'
-    stateDisplay: 'never'
-    prompt: ->
-      markdown """
-      ## Hidden Information
-
-      Nice job! When you can see the values of each node, it's not too hard to
-      take the best possible path. Unfortunately, you can't always see the
-      value of the nodes. Without this information, it's hard to make good
-      decisions. Try completing a few more rounds.
-    """
-    lowerMessage: 'Move with the arrow keys.'
-    timeline: getTrials 5
+#  train_hidden = new MouselabBlock
+#    blockName: 'train_hidden'
+#    stateDisplay: 'never'
+#    prompt: ->
+#      markdown """
+#      ## Hidden Information
+#
+#      Nice job! When you can see the values of each node, it's not too hard to
+#      take the best possible path. Unfortunately, you can't always see the
+#      value of the nodes. Without this information, it's hard to make good
+#      decisions. Try completing a few more rounds.
+#    """
+#    lowerMessage: 'Move with the arrow keys.'
+#    timeline: getTrials 5
 
   train_inspector = new MouselabBlock
     blockName: 'train_inspector'
@@ -322,7 +329,7 @@ initializeExperiment = ->
       move.
     """
     # but the node inspector takes some time to work and you can only inspect one node at a time.
-    timeline: getTrials 5
+    timeline: getTrials 1
     # lowerMessage: "<b>Click on the nodes to reveal their values.<b>"
 
 
@@ -340,7 +347,7 @@ initializeExperiment = ->
       to know when it's best to gather more information, and when it's time to
       act!
     """
-    timeline: getTrials 5
+    timeline: getTrials 1
 
 
   bonus_text = (long) ->
@@ -518,6 +525,10 @@ initializeExperiment = ->
       test
     ]
     when DEBUG then [
+      train_basic1
+      train_inspector
+      train_inspect_cost
+      divider_intro_training    
       training
       divider_training_test
       # quiz
