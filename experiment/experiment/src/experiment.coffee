@@ -10,7 +10,7 @@ if DEBUG
    X X X X X DEBUG  MODE X X X X X
   X X X X X X X X X X X X X X X X X
   """
-  CONDITION = 0
+  CONDITION = 1
 
 else
   console.log """
@@ -23,8 +23,10 @@ else
 
 if mode is "{{ mode }}"
   DEMO = true
-  CONDITION = 0
+  CONDITION = 1
 
+with_feedback = CONDITION > 0    
+    
 BLOCKS = undefined
 PARAMS = undefined
 TRIALS = undefined
@@ -269,6 +271,11 @@ initializeExperiment = ->
       SCORE = 0
       "<div style='text-align: center;'> Congratulations! You have completed the instructions. Next, you will enter a training block where you can practice planning, and a test block where you can use what you have learned to earn a bonus. <br/> Press <code>space</code> to start the training block.</div>"
 
+   divider_pretest_training  = new TextBlock
+    text: ->
+      SCORE = 0
+      "<div style='text-align: center;'> You will now enter a training block where you can practice playing Web of Cash some more. After that, there will be a test block where you can use what you have learned to earn a bonus. <br/> Press <code>space</code> to start the training block.</div>"
+
         
         
   train_basic1 = new MouselabBlock
@@ -428,7 +435,7 @@ initializeExperiment = ->
        '5 cents for every $10 you make in the game']
     ]
 
-  pre_test = new ButtonBlock
+  pre_test_intro = new ButtonBlock
     stimulus: ->
       SCORE = 0
       prompt: ''
@@ -436,9 +443,7 @@ initializeExperiment = ->
       markdown """
       # Training Completed
 
-      Well done! You've completed the training phase and you're ready to
-      play *Web of Cash* for real. You will have **#{test.timeline.length}
-      rounds** to make as much money as you can. Remember, #{bonus_text()}
+      Well done! You've completed the instructions. So now you are ready to play Web of Cash.
 
       One more thing: **You must spend *at least* 7 seconds on each round.**
       If you finish a round early, you'll have to wait until 7 seconds have
@@ -448,6 +453,17 @@ initializeExperiment = ->
       Good luck!
     """
 
+  pre_test = new MouselabBlock
+    minTime: 7
+    show_feedback: false
+    blockName: 'pre_test'
+    stateDisplay: 'click'
+    stateClickCost: PARAMS.inspectCost
+    timeline: switch
+      when SHOW_PARTICIPANT then DEMO_TRIALS
+      when DEBUG then TRIALS.slice(6, 7)
+      else getTrials 1
+    startScore: 50        
 
   post_test = new MouselabBlock
     minTime: 7
@@ -458,19 +474,19 @@ initializeExperiment = ->
     timeline: switch
       when SHOW_PARTICIPANT then DEMO_TRIALS
       when DEBUG then TRIALS.slice(6, 8)
-      else getTrials 30
+      else getTrials 20
     startScore: 50
     
   training = new MouselabBlock
     minTime: 7
-    show_feedback: true
+    show_feedback: with_feedback
     blockName: 'training'
     stateDisplay: 'click'
     stateClickCost: PARAMS.inspectCost
     timeline: switch
       when SHOW_PARTICIPANT then DEMO_TRIALS
       when DEBUG then TRIALS.slice(6, 8)
-      else getTrials 30
+      else getTrials 10
     startScore: 50
     
     
@@ -504,6 +520,7 @@ initializeExperiment = ->
       """
 
     questions: [
+      'What did you learn?'    
       'Was anything confusing or hard to understand?'
       'What is your age?'
       'Additional coments?'
@@ -537,13 +554,14 @@ initializeExperiment = ->
       train_basic1
       train_inspector
       train_inspect_cost
-      divider_intro_training    
+      pre_test_intro
+      pre_test
+      divider_pretest_training    
       training
       divider_training_test
       test_block_intro
-      # quiz
-      # pre_test
       post_test
+      quiz
       verbal_responses
       finish
     ]
