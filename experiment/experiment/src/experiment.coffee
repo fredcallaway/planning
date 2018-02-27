@@ -1,6 +1,6 @@
 # coffeelint: disable=max_line_length, indentation
 
-DEBUG = yes
+DEBUG = no
 TALK = no
 SHOW_PARTICIPANT = false
 
@@ -193,8 +193,8 @@ initializeExperiment = ->
     # moveEnergy: PARAMS.moveEnergy
     # clickEnergy: PARAMS.clickEnergy
     lowerMessage: """
-      Click on the nodes to reveal their values.<br>
-      Move with the arrow keys.
+      <b>Click on the nodes to reveal their values.<br>
+      Move with the arrow keys.</b>
     """
     
     _init: ->
@@ -262,7 +262,8 @@ initializeExperiment = ->
     text: ->
       SCORE = 0
       """ 
-    <div style='text-align: center;'> Welcome to the test block! Here, you can use what you have learned to earn a bonus. Concretely, #{bonus_text('long')}</div>
+    <div style='text-align: center;'> Welcome to the test block! Here, you can use what you have learned to earn a bonus. Concretely, #{bonus_text('long')} <br/> Press <code>space</code> to continue. </div>
+
       """
     
     
@@ -280,7 +281,7 @@ initializeExperiment = ->
         
   train_basic1 = new MouselabBlock
     blockName: 'train_basic'
-    stateDisplay: 'always'
+    stateDisplay: 'never'
     prompt: ->
       markdown """
       ## Web of Cash
@@ -326,44 +327,44 @@ initializeExperiment = ->
 #    lowerMessage: 'Move with the arrow keys.'
 #    timeline: getTrials 5
 
-  train_inspector = new MouselabBlock
-    blockName: 'train_inspector'
+#  train_inspector = new MouselabBlock
+#    blockName: 'train_inspector'
     # special: 'trainClick'
-    stateDisplay: 'click'
-    stateClickCost: 0
-    prompt: ->
-      markdown """
-      ## Node Inspector
+#    stateDisplay: 'click'
+#    stateClickCost: 0
+#    prompt: ->
+#      markdown """
+#      ## Node Inspector
 
-      It's hard to make good decision when you can't see what you're doing!
-      Fortunately, you have access to a ***node inspector*** which can reveal
-      the value of a node. To use the node inspector, simply click on a node.
-      **Note:** you can only use the node inspector when you're on the first
-      node.
+#      It's hard to make good decision when you can't see what you're doing!
+#      Fortunately, you have access to a ***node inspector*** which can reveal
+#      the value of a node. To use the node inspector, simply click on a node.
+#      **Note:** you can only use the node inspector when you're on the first
+#      node.
 
-      Trying using the node inspector on a few nodes before making your first
-      move.
-    """
-    # but the node inspector takes some time to work and you can only inspect one node at a time.
-    timeline: getTrials 1
+#      Trying using the node inspector on a few nodes before making your first
+#      move.
+#    """
+#    # but the node inspector takes some time to work and you can only inspect one node at a time.
+#    timeline: getTrials 1
     # lowerMessage: "<b>Click on the nodes to reveal their values.<b>"
 
 
-  train_inspect_cost = new MouselabBlock
-    blockName: 'train_inspect_cost'
-    stateDisplay: 'click'
-    stateClickCost: PARAMS.inspectCost
-    prompt: ->
-      markdown """
-      ## The price of information
-
-      You can use node inspector to gain information and make better
-      decisions. But, as always, there's a catch. Using the node inspector
-      costs $#{PARAMS.inspectCost} per node. To maximize your score, you have
-      to know when it's best to gather more information, and when it's time to
-      act!
-    """
-    timeline: getTrials 1
+#  train_inspect_cost = new MouselabBlock
+#    blockName: 'train_inspect_cost'
+#    stateDisplay: 'click'
+#    stateClickCost: PARAMS.inspectCost
+#    prompt: ->
+#      markdown """
+#      ## The price of information
+#
+#      You can use node inspector to gain information and make better
+#      decisions. But, as always, there's a catch. Using the node inspector
+#      costs $#{PARAMS.inspectCost} per node. To maximize your score, you have
+#      to know when it's best to gather more information, and when it's time to
+#      act!
+#    """
+#    timeline: getTrials 1
 
 
   bonus_text = (long) ->
@@ -375,24 +376,24 @@ initializeExperiment = ->
     return s
 
 
-  train_final = new MouselabBlock
-    blockName: 'train_final'
-    stateDisplay: 'click'
-    stateClickCost: PARAMS.inspectCost
-    prompt: ->
-      markdown """
-      ## Earn a Big Bonus
+#  train_final = new MouselabBlock
+#    blockName: 'train_final'
+#    stateDisplay: 'click'
+#    stateClickCost: PARAMS.inspectCost
+#    prompt: ->
+#      markdown """
+#      ## Earn a Big Bonus
 
-      Nice! You've learned how to play *Web of Cash*, and you're almost ready
-      to play it for real. To make things more interesting, you will earn real
-      money based on how well you play the game. Specifically,
-      #{bonus_text('long')}
+#     Nice! You've learned how to play *Web of Cash*, and you're almost ready
+#      to play it for real. To make things more interesting, you will earn real
+#      money based on how well you play the game. Specifically,
+#      #{bonus_text('long')}
 
-      These are the **final practice rounds** before your score starts counting
-      towards your bonus.
-    """
-    lowerMessage: fullMessage
-    timeline: getTrials 5
+#      These are the **final practice rounds** before your score starts counting
+#      towards your bonus.
+#    """
+#    lowerMessage: fullMessage
+#    timeline: getTrials 5
 
 
 #  train = new Block
@@ -435,24 +436,34 @@ initializeExperiment = ->
        '5 cents for every $10 you make in the game']
     ]
 
-  pre_test_intro = new ButtonBlock
-    stimulus: ->
+  pre_test_intro = new TextBlock
+    text: ->
       SCORE = 0
-      prompt: ''
-      psiturk.finishInstructions()
+      #prompt: ''
+      #psiturk.finishInstructions()
       markdown """
-      # Training Completed
+      ## Node Inspector
 
-      Well done! You've completed the instructions. So now you are ready to play Web of Cash.
+      It's hard to make good decision when you can't see what you will get!
+      Fortunately, you have access to a ***node inspector*** which can reveal
+      the value of a node. To use the node inspector, simply ***click on a node***.
+      **Note:** you can only use the node inspector when you're on the first
+      node. 
+
+      <img class='display' style="width:50%; height:auto" src='static/images/web-of-cash.png'/>
 
       One more thing: **You must spend *at least* 7 seconds on each round.**
       If you finish a round early, you'll have to wait until 7 seconds have
       passed.
 
       To thank you for your work so far, we'll start you off with **$50**.
-      Good luck!
-    """
+      Good luck! 
 
+      Press <code>space</code> to continue.
+        
+    """
+       
+        
   pre_test = new MouselabBlock
     minTime: 7
     show_feedback: false
@@ -465,18 +476,7 @@ initializeExperiment = ->
       else getTrials 1
     startScore: 50        
 
-  post_test = new MouselabBlock
-    minTime: 7
-    show_feedback: false
-    blockName: 'test'
-    stateDisplay: 'click'
-    stateClickCost: PARAMS.inspectCost
-    timeline: switch
-      when SHOW_PARTICIPANT then DEMO_TRIALS
-      when DEBUG then TRIALS.slice(6, 8)
-      else getTrials 20
-    startScore: 50
-    
+        
   training = new MouselabBlock
     minTime: 7
     show_feedback: with_feedback
@@ -486,8 +486,22 @@ initializeExperiment = ->
     timeline: switch
       when SHOW_PARTICIPANT then DEMO_TRIALS
       when DEBUG then TRIALS.slice(6, 8)
+      else getTrials 6
+    startScore: 50
+        
+        
+  post_test = new MouselabBlock
+    minTime: 7
+    show_feedback: false
+    blockName: 'test'
+    stateDisplay: 'click'
+    stateClickCost: PARAMS.inspectCost
+    timeline: switch
+      when SHOW_PARTICIPANT then DEMO_TRIALS
+      when DEBUG then TRIALS.slice(6, 8)
       else getTrials 10
     startScore: 50
+    
     
     
   verbal_responses = new Block
@@ -552,8 +566,9 @@ initializeExperiment = ->
     ]
     when DEBUG then [
       train_basic1
-      train_inspector
-      train_inspect_cost
+      #train_inspector
+      #train_inspect_cost
+      #instructions1    
       pre_test_intro
       pre_test
       divider_pretest_training    
@@ -569,12 +584,20 @@ initializeExperiment = ->
       talk_demo
     ]
     else [
-        train
-        quiz
-        pre_test
-        test
-        verbal_responses
-        finish
+      train_basic1
+      #train_inspector
+      #train_inspect_cost
+      #instructions1    
+      pre_test_intro
+      pre_test
+      divider_pretest_training    
+      training
+      divider_training_test
+      test_block_intro
+      post_test
+      quiz
+      verbal_responses
+      finish
       ]
 
   # ================================================ #

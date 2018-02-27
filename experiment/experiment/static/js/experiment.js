@@ -2,7 +2,7 @@
 // coffeelint: disable=max_line_length, indentation
 var BLOCKS, CONDITION, DEBUG, DEMO, DEMO_TRIALS, N_TRIAL, PARAMS, SCORE, SHOW_PARTICIPANT, STRUCTURE, TALK, TRIALS, calculateBonus, createStartButton, getTrials, initializeExperiment, psiturk, saveData, with_feedback;
 
-DEBUG = true;
+DEBUG = false;
 
 TALK = false;
 
@@ -149,7 +149,7 @@ createStartButton = function() {
 };
 
 initializeExperiment = function() {
-  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, divider_intro_training, divider_pretest_training, divider_training_test, experiment_timeline, finish, fullMessage, img, nodeValuesDescription, post_test, pre_test, pre_test_intro, prompt_resubmit, quiz, reprompt, reset_score, save_data, talk_demo, test_block_intro, text, train_basic1, train_final, train_inspect_cost, train_inspector, training, verbal_responses;
+  var Block, ButtonBlock, MouselabBlock, QuizLoop, TextBlock, bonus_text, divider, divider_intro_training, divider_pretest_training, divider_training_test, experiment_timeline, finish, fullMessage, img, nodeValuesDescription, post_test, pre_test, pre_test_intro, prompt_resubmit, quiz, reprompt, reset_score, save_data, talk_demo, test_block_intro, text, train_basic1, training, verbal_responses;
   $('#jspsych-target').html('');
   console.log('INITIALIZE EXPERIMENT');
   //  ======================== #
@@ -238,7 +238,7 @@ initializeExperiment = function() {
     // clickDelay: PARAMS.clickDelay
     // moveEnergy: PARAMS.moveEnergy
     // clickEnergy: PARAMS.clickEnergy
-    MouselabBlock.prototype.lowerMessage = "Click on the nodes to reveal their values.<br>\nMove with the arrow keys.";
+    MouselabBlock.prototype.lowerMessage = "<b>Click on the nodes to reveal their values.<br>\nMove with the arrow keys.</b>";
 
     return MouselabBlock;
 
@@ -291,7 +291,7 @@ initializeExperiment = function() {
   test_block_intro = new TextBlock({
     text: function() {
       SCORE = 0;
-      return `<div style='text-align: center;'> Welcome to the test block! Here, you can use what you have learned to earn a bonus. Concretely, ${bonus_text('long')}</div>`;
+      return `<div style='text-align: center;'> Welcome to the test block! Here, you can use what you have learned to earn a bonus. Concretely, ${bonus_text('long')} <br/> Press <code>space</code> to continue. </div>\n`;
     }
   });
   divider_intro_training = new TextBlock({
@@ -308,7 +308,7 @@ initializeExperiment = function() {
   });
   train_basic1 = new MouselabBlock({
     blockName: 'train_basic',
-    stateDisplay: 'always',
+    stateDisplay: 'never',
     prompt: function() {
       return markdown("## Web of Cash\n\nIn this HIT, you will play a game called *Web of Cash*. You will guide a\nmoney-loving spider through a spider web. When you land on a gray circle\n(a ***node***) the value of the node is added to your score.\n\nYou can move the spider with the arrow keys, but only in the direction\nof the arrows between the nodes. Go ahead, try it out!");
     },
@@ -345,27 +345,44 @@ initializeExperiment = function() {
   //    """
   //    lowerMessage: 'Move with the arrow keys.'
   //    timeline: getTrials 5
-  train_inspector = new MouselabBlock({
-    blockName: 'train_inspector',
-    // special: 'trainClick'
-    stateDisplay: 'click',
-    stateClickCost: 0,
-    prompt: function() {
-      return markdown("## Node Inspector\n\nIt's hard to make good decision when you can't see what you're doing!\nFortunately, you have access to a ***node inspector*** which can reveal\nthe value of a node. To use the node inspector, simply click on a node.\n**Note:** you can only use the node inspector when you're on the first\nnode.\n\nTrying using the node inspector on a few nodes before making your first\nmove.");
-    },
-    // but the node inspector takes some time to work and you can only inspect one node at a time.
-    timeline: getTrials(1)
-  });
+
+  //  train_inspector = new MouselabBlock
+  //    blockName: 'train_inspector'
+  // special: 'trainClick'
+  //    stateDisplay: 'click'
+  //    stateClickCost: 0
+  //    prompt: ->
+  //      markdown """
+  //      ## Node Inspector
+
+  //      It's hard to make good decision when you can't see what you're doing!
+  //      Fortunately, you have access to a ***node inspector*** which can reveal
+  //      the value of a node. To use the node inspector, simply click on a node.
+  //      **Note:** you can only use the node inspector when you're on the first
+  //      node.
+
+  //      Trying using the node inspector on a few nodes before making your first
+  //      move.
+  //    """
+  //    # but the node inspector takes some time to work and you can only inspect one node at a time.
+  //    timeline: getTrials 1
   // lowerMessage: "<b>Click on the nodes to reveal their values.<b>"
-  train_inspect_cost = new MouselabBlock({
-    blockName: 'train_inspect_cost',
-    stateDisplay: 'click',
-    stateClickCost: PARAMS.inspectCost,
-    prompt: function() {
-      return markdown(`## The price of information\n\nYou can use node inspector to gain information and make better\ndecisions. But, as always, there's a catch. Using the node inspector\ncosts $${PARAMS.inspectCost} per node. To maximize your score, you have\nto know when it's best to gather more information, and when it's time to\nact!`);
-    },
-    timeline: getTrials(1)
-  });
+
+  //  train_inspect_cost = new MouselabBlock
+  //    blockName: 'train_inspect_cost'
+  //    stateDisplay: 'click'
+  //    stateClickCost: PARAMS.inspectCost
+  //    prompt: ->
+  //      markdown """
+  //      ## The price of information
+
+  //      You can use node inspector to gain information and make better
+  //      decisions. But, as always, there's a catch. Using the node inspector
+  //      costs $#{PARAMS.inspectCost} per node. To maximize your score, you have
+  //      to know when it's best to gather more information, and when it's time to
+  //      act!
+  //    """
+  //    timeline: getTrials 1
   bonus_text = function(long) {
     var s;
     // if PARAMS.bonusRate isnt .01
@@ -376,16 +393,25 @@ initializeExperiment = function() {
     }
     return s;
   };
-  train_final = new MouselabBlock({
-    blockName: 'train_final',
-    stateDisplay: 'click',
-    stateClickCost: PARAMS.inspectCost,
-    prompt: function() {
-      return markdown(`## Earn a Big Bonus\n\nNice! You've learned how to play *Web of Cash*, and you're almost ready\nto play it for real. To make things more interesting, you will earn real\nmoney based on how well you play the game. Specifically,\n${bonus_text('long')}\n\nThese are the **final practice rounds** before your score starts counting\ntowards your bonus.`);
-    },
-    lowerMessage: fullMessage,
-    timeline: getTrials(5)
-  });
+  //  train_final = new MouselabBlock
+  //    blockName: 'train_final'
+  //    stateDisplay: 'click'
+  //    stateClickCost: PARAMS.inspectCost
+  //    prompt: ->
+  //      markdown """
+  //      ## Earn a Big Bonus
+
+  //     Nice! You've learned how to play *Web of Cash*, and you're almost ready
+  //      to play it for real. To make things more interesting, you will earn real
+  //      money based on how well you play the game. Specifically,
+  //      #{bonus_text('long')}
+
+  //      These are the **final practice rounds** before your score starts counting
+  //      towards your bonus.
+  //    """
+  //    lowerMessage: fullMessage
+  //    timeline: getTrials 5
+
   //  train = new Block
   //    training: true
   //    timeline: [
@@ -409,14 +435,12 @@ initializeExperiment = function() {
     questions: ["What is the range of node values in the first step?", "What is the range of node values in the last step?", "What is the cost of clicking?", "How much REAL money do you earn?"],
     options: [['$-4 to $4', '$-8 to $8', '$-48 to $48'], ['$-4 to $4', '$-8 to $8', '$-48 to $48'], ['$0', '$1', '$8', '$24'], ['1 cent for every $1 you make in the game', '1 cent for every $5 you make in the game', '5 cents for every $1 you make in the game', '5 cents for every $10 you make in the game']]
   });
-  pre_test_intro = new ButtonBlock({
-    stimulus: function() {
+  pre_test_intro = new TextBlock({
+    text: function() {
       SCORE = 0;
-      ({
-        prompt: ''
-      });
-      psiturk.finishInstructions();
-      return markdown("# Training Completed\n\nWell done! You've completed the instructions. So now you are ready to play Web of Cash.\n\nOne more thing: **You must spend *at least* 7 seconds on each round.**\nIf you finish a round early, you'll have to wait until 7 seconds have\npassed.\n\nTo thank you for your work so far, we'll start you off with **$50**.\nGood luck!");
+      //prompt: ''
+      //psiturk.finishInstructions()
+      return markdown("## Node Inspector\n\nIt's hard to make good decision when you can't see what you will get!\nFortunately, you have access to a ***node inspector*** which can reveal\nthe value of a node. To use the node inspector, simply ***click on a node***.\n**Note:** you can only use the node inspector when you're on the first\nnode. \n\n<img class='display' style=\"width:50%; height:auto\" src='static/images/web-of-cash.png'/>\n\nOne more thing: **You must spend *at least* 7 seconds on each round.**\nIf you finish a round early, you'll have to wait until 7 seconds have\npassed.\n\nTo thank you for your work so far, we'll start you off with **$50**.\nGood luck! \n\nPress <code>space</code> to continue.\n  ");
     }
   });
   pre_test = new MouselabBlock({
@@ -437,10 +461,10 @@ initializeExperiment = function() {
     })(),
     startScore: 50
   });
-  post_test = new MouselabBlock({
+  training = new MouselabBlock({
     minTime: 7,
-    show_feedback: false,
-    blockName: 'test',
+    show_feedback: with_feedback,
+    blockName: 'training',
     stateDisplay: 'click',
     stateClickCost: PARAMS.inspectCost,
     timeline: (function() {
@@ -450,15 +474,15 @@ initializeExperiment = function() {
         case !DEBUG:
           return TRIALS.slice(6, 8);
         default:
-          return getTrials(20);
+          return getTrials(6);
       }
     })(),
     startScore: 50
   });
-  training = new MouselabBlock({
+  post_test = new MouselabBlock({
     minTime: 7,
-    show_feedback: with_feedback,
-    blockName: 'training',
+    show_feedback: false,
+    blockName: 'test',
     stateDisplay: 'click',
     stateClickCost: PARAMS.inspectCost,
     timeline: (function() {
@@ -513,11 +537,41 @@ initializeExperiment = function() {
       case !SHOW_PARTICIPANT:
         return [test];
       case !DEBUG:
-        return [train_basic1, train_inspector, train_inspect_cost, pre_test_intro, pre_test, divider_pretest_training, training, divider_training_test, test_block_intro, post_test, quiz, verbal_responses, finish];
+        return [
+          train_basic1,
+          //train_inspector
+          //train_inspect_cost
+          //instructions1    
+          pre_test_intro,
+          pre_test,
+          divider_pretest_training,
+          training,
+          divider_training_test,
+          test_block_intro,
+          post_test,
+          quiz,
+          verbal_responses,
+          finish
+        ];
       case !TALK:
         return [talk_demo];
       default:
-        return [train, quiz, pre_test, test, verbal_responses, finish];
+        return [
+          train_basic1,
+          //train_inspector
+          //train_inspect_cost
+          //instructions1    
+          pre_test_intro,
+          pre_test,
+          divider_pretest_training,
+          training,
+          divider_training_test,
+          test_block_intro,
+          post_test,
+          quiz,
+          verbal_responses,
+          finish
+        ];
     }
   })();
   // ================================================ #
