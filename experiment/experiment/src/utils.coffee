@@ -22,6 +22,14 @@ check = (name, val) ->
     throw new Error "#{name}is undefined"
   val
 
+
+argmax = (obj) ->
+  _.chain(obj).keys().max((s) => obj[s]).value()
+
+sleep = (ms) ->
+  new Promise (resolve) ->
+    window.setTimeout resolve, ms
+
 mean = (xs) ->
   (xs.reduce ((acc, x) -> acc+x)) / xs.length
 

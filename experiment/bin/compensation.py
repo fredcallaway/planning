@@ -278,6 +278,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         'version',
+        nargs='+',
         help='Version code e.g. 1A.0'
     )
     parser.add_argument(
@@ -290,44 +291,63 @@ if __name__ == '__main__':
         type=float,
         default=0.0,
         )
+    parser.add_argument(
+        '-y',
+        action='store_true'
+        )
+    parser.add_argument(
+        '-f',
+        action='store_true'
+        )
     args = parser.parse_args()
     comp = Compensator(verbose=args.verbosity)
-    identifiers = pd.read_csv(f'data/human_raw/{args.version}/identifiers.csv').set_index('pid')
-    pdf = pd.read_csv(f'data/human/{args.version}/participants.csv').set_index('pid')
-    pdf = pdf.join(identifiers).reset_index()
 
-    try:
-        payment = pd.read_csv(f'data/human_raw/{args.version}/payment.csv').set_index('worker_id')
-        pdf = pdf.set_index('worker_id')
-        pdf['status'] = payment['status'].fillna('submitted')
-        pdf = pdf.reset_index()
-    except FileNotFoundError:
-        pdf['status'] = 'submitted'
+    for version in args.version:
+        version = version.split('data/human_raw/')[-1]
+        print(f'Approving and bonusing participants for {version}')
+        try:
+            identifiers = pd.read_csv(f'data/human_raw/{version}/identifiers.csv').set_index('pid')
+            pdf = pd.read_csv(f'data/human/{version}/participants.csv').set_index('pid')
+            pdf = pdf.join(identifiers).reset_index()
 
-    pdf.bonus = pdf.bonus.clip(lower=0) + args.extra
-    total = pdf.query('status != "bonused"').bonus.sum()
-    response = input(f'Assigning ${total:.2f} in bonuses. Continue? y/[n]:  ')
-    if response != 'y':
-        print('Exiting.')
-        exit(0)
+            try:
+                payment = pd.read_csv(f'data/human_raw/{version}/payment.csv').set_index('worker_id')
+                pdf = pdf.set_index('worker_id')
+                pdf['status'] = payment['status'].fillna('submitted')
+                pdf = pdf.reset_index()
+            except FileNotFoundError:
+                pdf['status'] = 'submitted'
 
-    print(pdf.bonus)
-    def run():
-        for i, row in pdf.iterrows():
-            if row.status == 'submitted':
-                err = comp.approve(row.assignment_id)
-                if not err:
-                    row.status = 'approved'
-            if row.status == 'approved':
-                if row.bonus <= 0:
-                    row.status = 'no bonus'
-                else:
-                    err = comp.grant_bonus(row.worker_id, 
-                                           row.assignment_id,
-                                           round(row.bonus, 2))
-                    if not err:
-                        row.status = 'bonused'
-            yield row[['pid', 'worker_id', 'assignment_id', 'bonus', 'status']]
+            pdf.bonus = pdf.bonus.clip(lower=0) + args.extra
+            total = pdf.query('status != "bonused"').bonus.sum()
+            if not args.y:
+                response = input(f'Assigning ${total:.2f} in bonuses. Continue? y/[n]:  ')
+                if response != 'y':
+                    print('Exiting.')
+                    exit(0)
 
-    pd.DataFrame(run()).to_csv(f'data/human_raw/{args.version}/payment.csv', index=False)
+            def run():
+                for i, row in pdf.iterrows():
+                    if row.status == 'submitted':
+                        err = comp.approve(row.assignment_id)
+                        if not err:
+                            row.status = 'approved'
+                    if row.status == 'approved':
+                        if row.bonus <= 0:
+                            row.status = 'no bonus'
+                        else:
+                            err = comp.grant_bonus(row.worker_id, 
+                                                   row.assignment_id,
+                                                   round(row.bonus, 2))
+                            if not err:
+                                row.status = 'bonused'
+                    yield row[['pid', 'worker_id', 'assignment_id', 'bonus', 'status']]
+
+            pd.DataFrame(run()).to_csv(f'data/human_raw/{version}/payment.csv', index=False)
+
+        except Exception as e:
+            if args.f:
+                print(e)
+            else:
+                raise
 

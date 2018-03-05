@@ -215,8 +215,7 @@ if __name__ == "__main__":
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(
-        "-v", "--version",
-        required=True,
+        "version",
         help=("Experiment version. This corresponds to the experiment_code_version "
               "parameter in the psiTurk config.txt file that was used when the "
               "data was collected."))
