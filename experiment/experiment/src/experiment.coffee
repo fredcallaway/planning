@@ -66,7 +66,6 @@ $(window).on 'load', ->
 
   delay 300, ->
     console.log 'Loading data'
-        
     PARAMS =
       inspectCost: 1
       startTime: Date(Date.now())
@@ -100,13 +99,13 @@ $(window).on 'load', ->
         clearTimeout loadTimeout
         delay 500, createStartButton
       else
-        saveData().then(->
-          clearTimeout loadTimeout
-          delay 500, createStartButton
-        ).catch(->
-          clearTimeout loadTimeout
-          $('#data-error').show()
-        )
+        saveData()
+          .then ->
+            clearTimeout loadTimeout
+            delay 500, createStartButton
+          .catch ->
+            clearTimeout loadTimeout
+            $('#data-error').show()
 
 createStartButton = ->
   if DEBUG or TALK
