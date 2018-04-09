@@ -118,7 +118,9 @@ createStartButton = ->
 
         To go through the task as if you were a participant, click
         <b>Begin</b> above.<br> To view replays of the participants in in our
-        study, or simulated runs of one of our models, click one of the buttons below
+        study, or simulated runs of one of our models, click one of the buttons below.
+
+        Or view Experiment 1 <a href="http://cocosci.dreamhosters.com/webexpt/webofcash-demo/">here</a>.
 
       </div>
       <div class='center' id='replay-buttons'></div>

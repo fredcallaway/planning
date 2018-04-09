@@ -133,7 +133,7 @@ createStartButton = function() {
     return;
   }
   if (DEMO) {
-    $('#jspsych-target').append("<div class='alert alert-info'>\n  <h3>Demo mode</h3>\n\n  To go through the task as if you were a participant, click\n  <b>Begin</b> above.<br> To view replays of the participants in in our\n  study, or simulated runs of one of our models, click one of the buttons below\n\n</div>\n<div class='center' id='replay-buttons'></div>");
+    $('#jspsych-target').append("<div class='alert alert-info'>\n  <h3>Demo mode</h3>\n\n  To go through the task as if you were a participant, click\n  <b>Begin</b> above.<br> To view replays of the participants in in our\n  study, or simulated runs of one of our models, click one of the buttons below.\n\n  Or view Experiment 1 <a href=\"http://cocosci.dreamhosters.com/webexpt/webofcash-demo/\">here</a>.\n\n</div>\n<div class='center' id='replay-buttons'></div>");
     ['Human', 'Optimal', 'Best-First', 'Yourself'].forEach(function(option) {
       var btn;
       return btn = $('<button/>', {

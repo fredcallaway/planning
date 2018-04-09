@@ -13,4 +13,4 @@ clean:
 
 demo:
 	cp templates/exp.html index.html
-	rsync -av --delete-after --copy-links . cocosci@cocosci-mcrl.dreamhosters.com:/home/cocosci/cocosci.dreamhosters.com/webexpt/webofcash-demo
+	rsync -av --delete-after --copy-links . cocosci@cocosci-mcrl.dreamhosters.com:/home/cocosci/cocosci.dreamhosters.com/webexpt/webofcash-demo_exp2
