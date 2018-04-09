@@ -85,7 +85,7 @@ $(window).on('load', function() {
       inspectCost: 1,
       startTime: Date(Date.now()),
       bonusRate: .002,
-      // variance: ['2_4_24', '24_4_2'][CONDITION]
+      variance: ['2_4_24', '24_4_2'][CONDITION],
       branching: '312'
     };
     psiturk.recordUnstructuredData('params', PARAMS);
