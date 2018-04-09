@@ -116,6 +116,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @startScore=0
 
         @actions=null
+        @demoStates=null
         @clicks=null
         @pid=null
 
@@ -145,7 +146,10 @@ jsPsych.plugins['mouselab-mdp'] = do ->
 
       if @pid?
         @showParticipant = true
-        centerMessage = "Participant #{@pid}"
+        centerMessage = switch @pid
+          when 'optimal' then "Optimal Policy"
+          when 'best-first' then "Best-First Policy"
+          else "Participant #{@pid}"
 
       LOG_INFO 'NAME', @name
       SIZE = size
@@ -275,10 +279,16 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @clickState @states[c], c
         @canvas.renderAll()
       
-      for a in @actions
-        await sleep 700
-        s = _.last @data.path
-        @handleKey s, a
+      if @actions?
+        for a in @actions
+          await sleep 700
+          s = _.last @data.path
+          @handleKey s, a
+      else
+        for s1 in @demoStates
+          await sleep 700
+          @move s, null, s1
+          s = s1
           
 
     startTimer: =>

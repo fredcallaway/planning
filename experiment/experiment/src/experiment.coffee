@@ -117,19 +117,35 @@ createStartButton = ->
       <div class='alert alert-info'>
         <h3>Demo mode</h3>
 
-        To go through the task as if you were a participant,
-        click <b>Begin</b> above.<br>
-        To view replays of the participants
-        in our study, click <b>View Replays</b> below.
+        To go through the task as if you were a participant, click
+        <b>Begin</b> above.<br> To view replays of the participants in in our
+        study, or simulated runs of one of our models, click one of the buttons below
+
       </div>
-      <div class='center'>
-        <button class='btn btn-primary btn-lg centered' id="view-replays">View Replays</button>
-      </div>
+      <div class='center' id='replay-buttons'></div>
     """
-    $('#view-replays').click ->
-      SHOW_PARTICIPANT = true
-      DEMO_TRIALS = _.shuffle loadJson "static/json/demo/312.json"
-      initializeExperiment()
+    ['Human', 'Optimal', 'Best-First', 'Yourself'].forEach (option) ->
+      btn = $('<button/>',
+        class: 'btn btn-primary btn-lg'
+        text: option
+        click: ->
+          SHOW_PARTICIPANT = true
+          if option is 'Yourself'
+            DEMO_TRIALS = TRIALS
+          else
+            DEMO_TRIALS = _.shuffle loadJson "static/json/demo/312_#{option.toLowerCase()}.json"
+          initializeExperiment()
+      ).appendTo $('#replay-buttons')
+        # <button class='btn btn-primary btn-lg centered' id="view-replays">View Optimal</button>
+
+    # $('#view-optimal').click ->
+    #   SHOW_PARTICIPANT = true
+    #   DEMO_TRIALS = _.shuffle loadJson "static/json/demo/312_optimal.json"
+    #   initializeExperiment()
+    # $('#view-optimal').click ->
+    #   SHOW_PARTICIPANT = true
+    #   DEMO_TRIALS = _.shuffle loadJson "static/json/demo/312_optimal.json"
+    #   initializeExperiment()
   $('#load-icon').hide()
   $('#slow-load').hide()
   $('#success-load').show()
@@ -480,7 +496,7 @@ initializeExperiment = ->
       #   stateClickCost: PARAMS.inspectCost
       #   timeline: getTrials 3
 
-      divider
+      # divider
 
       new MouselabBlock
         stateDisplay: 'click'
