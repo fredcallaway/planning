@@ -125,7 +125,7 @@ createStartButton = ->
       </div>
       <div class='center' id='replay-buttons'></div>
     """
-    ['Human', 'Optimal', 'Best-First', 'Yourself'].forEach (option) ->
+    ['Human', 'Optimal', 'Yourself'].forEach (option) ->
       btn = $('<button/>',
         class: 'btn btn-primary btn-lg'
         text: option
@@ -134,7 +134,8 @@ createStartButton = ->
           if option is 'Yourself'
             DEMO_TRIALS = TRIALS
           else
-            DEMO_TRIALS = _.shuffle loadJson "static/json/demo/312_#{option.toLowerCase()}.json"
+            DEMO_TRIALS = _.shuffle loadJson "static/json/demo/exp3_312_#{option.toLowerCase()}.json"
+            console.log 'THIS IS ME'
           initializeExperiment()
       ).appendTo $('#replay-buttons')
         # <button class='btn btn-primary btn-lg centered' id="view-replays">View Optimal</button>

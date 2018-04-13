@@ -134,7 +134,7 @@ createStartButton = function() {
   }
   if (DEMO) {
     $('#jspsych-target').append("<div class='alert alert-info'>\n  <h3>Demo mode</h3>\n\n  To go through the task as if you were a participant, click\n  <b>Begin</b> above.<br> To view replays of the participants in in our\n  study, or simulated runs of one of our models, click one of the buttons below.\n\n  Or view Experiment 1 <a href=\"http://cocosci.dreamhosters.com/webexpt/webofcash-demo/\">here</a>.\n\n</div>\n<div class='center' id='replay-buttons'></div>");
-    ['Human', 'Optimal', 'Best-First', 'Yourself'].forEach(function(option) {
+    ['Human', 'Optimal', 'Yourself'].forEach(function(option) {
       var btn;
       return btn = $('<button/>', {
         class: 'btn btn-primary btn-lg',
@@ -144,7 +144,8 @@ createStartButton = function() {
           if (option === 'Yourself') {
             DEMO_TRIALS = TRIALS;
           } else {
-            DEMO_TRIALS = _.shuffle(loadJson(`static/json/demo/312_${option.toLowerCase()}.json`));
+            DEMO_TRIALS = _.shuffle(loadJson(`static/json/demo/exp3_312_${option.toLowerCase()}.json`));
+            console.log('THIS IS ME');
           }
           return initializeExperiment();
         }
