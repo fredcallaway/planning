@@ -134,7 +134,7 @@ createStartButton = ->
           if option is 'Yourself'
             DEMO_TRIALS = TRIALS
           else
-            DEMO_TRIALS = _.shuffle loadJson "static/json/demo/exp3_312_#{option.toLowerCase()}.json"
+            DEMO_TRIALS = _.shuffle loadJson "static/json/demo/exp2_312_#{option.toLowerCase()}.json"
             console.log 'THIS IS ME'
           initializeExperiment()
       ).appendTo $('#replay-buttons')
