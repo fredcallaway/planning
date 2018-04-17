@@ -23,6 +23,9 @@ check = (name, val) ->
   val
 
 
+argmax = (obj) ->
+  _.chain(obj).keys().max((s) => obj[s]).value()
+
 sleep = (ms) ->
   new Promise (resolve) ->
     window.setTimeout resolve, ms

@@ -14,6 +14,7 @@ TIME_LEFT = undefined
 
 jsPsych.plugins['mouselab-mdp'] = do ->
 
+
   PRINT = (args...) -> console.log args...
   NULL = (args...) -> null
   LOG_INFO = PRINT
@@ -127,6 +128,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @timeLimit=null
         @minTime=null
         @energyLimit=null
+        @qs=null
 
         # @transition=null  # function `(s0, a, s1, r) -> null` called after each transition
         @keys=KEYS  # mapping from actions to keycodes
@@ -144,6 +146,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         lowerMessage='&nbsp;'
       } = config
 
+      @termAction = "#{@stateRewards.length}"
       if @pid?
         @showParticipant = true
         centerMessage = switch @pid
@@ -151,7 +154,6 @@ jsPsych.plugins['mouselab-mdp'] = do ->
           when 'best-first' then "Best-First Policy"
           else "Participant #{@pid}"
 
-      LOG_INFO 'NAME', @name
       SIZE = size
 
       _.extend this, config
@@ -261,6 +263,15 @@ jsPsych.plugins['mouselab-mdp'] = do ->
 
       @waitMessage.hide()
       @defaultLowerMessage = lowerMessage
+
+      # feedback element
+      $('#jspsych-target').append """
+      <div id="mdp-feedback" class="modal">
+        <div id="mdp-feedback-content" class="modal-content">
+          <h3>Default</h3>
+        </div>
+      </div>
+      """
 
       mdp = this
       LOG_INFO 'new MouselabMDP', this
@@ -380,6 +391,12 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         r = @stateRewards[s1]
       return [r, s1]
 
+    encodeBelief: =>
+      b = _.values(@states)
+        .map((g) => g.label.text or '_')
+      b[0] = 0  # first state is known to be 0
+      return b.join(' ')
+
     getReward: (s0, a, s1) =>
       if @stateRewards?
         @stateRewards[s1]
@@ -387,6 +404,8 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @graph[s0][a]
 
     move: (s0, a, s1) =>
+      unless @moved
+        await @showFeedback @termAction
       @moved = true
       if @freeze
         LOG_INFO 'freeze!'
@@ -418,7 +437,7 @@ jsPsych.plugins['mouselab-mdp'] = do ->
           @arrive s1
 
     clickState: (g, s) =>
-      LOG_DEBUG "clickState #{s}"
+      LOG_INFO "clickState #{s}"
       if @moved
         @lowerMessage.html "<b>You can't use the node inspector after moving!</b>"
         @lowerMessage.css 'color', '#FC4754'
@@ -431,7 +450,9 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @lowerMessage.html '<b>Nice job! You can click on more nodes or start moving.</b>'
         @lowerMessage.css 'color', '#000'
 
+
       if @stateLabels and @stateDisplay is 'click' and not g.label.text
+        await @showFeedback s # Note: this must be called before g.setLabel r
         @addScore -@stateClickCost
         @recordQuery 'click', 'state', s
         @spendEnergy @clickEnergy
@@ -439,12 +460,74 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         if @clickDelay
           @freeze = true
           g.setLabel '...'
-          delay @clickDelay, =>
-            @freeze = false
-            g.setLabel r
-            @canvas.renderAll()
-        else g.setLabel r
+          await sleep @clickDelay()
+          @freeze = false
+        g.setLabel r
+        @canvas.renderAll()
 
+    showFeedback: (action) =>
+              
+      console.log 'showFeedback'
+      qs = @qs[@encodeBelief()]
+      v = (_.max qs)
+      optimal = (a for a, q of qs when v - q < .01)
+
+      if action in optimal
+        return
+
+      @freeze = true
+      strictness = 1
+      loss = v - qs[action]
+      if loss > 0
+        delay = 2 + Math.round(strictness * loss)
+      else
+        delay = 0
+      
+    
+      if @_block.show_feedback
+          oldFeedbackMessage = @prompt.html()
+
+          if @termAction in optimal
+            msg = """        
+              You shouldn't have inspected any more nodes.
+            """
+          else
+            msg = """          
+              You should have inspected one of the highlighted nodes.          
+            """
+            for a in optimal
+              @states[a].circle.set('fill', '#49f')
+            @canvas.renderAll()
+
+          @prompt.html """
+            <div align='center' style='color:#FF0000; font-weight:bold; font-size:18pt'>
+            #{msg}<br>
+            Please wait #{delay} seconds.
+            </div>
+          """
+
+
+          # @freeze = true
+          # $('#mdp-feedback').show()
+          # $('#mdp-feedback-content')
+          #   .html msg
+          # $('#mdp-feedback').hide()
+
+          await sleep delay * 1000
+
+          # Reset.
+          @prompt.html oldFeedbackMessage
+      else
+            console.log 'no'
+
+             
+      @freeze = false
+      unless @termAction in optimal
+        for s in optimal
+          @states[s].circle.set('fill', '#bbb')
+        @canvas.renderAll()
+ 
+            
     mouseoverState: (g, s) =>
       # LOG_DEBUG "mouseoverState #{s}"
       if @stateLabels and @stateDisplay is 'hover'
@@ -575,7 +658,6 @@ jsPsych.plugins['mouselab-mdp'] = do ->
         @initTime = Date.now()
         @arrive @initial
       )
-      console.log "RUN #{@pid}"
       if @showParticipant
         @runDemo()
     # Draw object on the canvas.
@@ -667,6 +749,8 @@ jsPsych.plugins['mouselab-mdp'] = do ->
     constructor: (@name, left, top, config={}) ->
       left = (left + 0.5) * SIZE
       top = (top + 0.5) * SIZE
+      @left = left
+      @top = top
       conf =
         left: left
         top: top
@@ -680,24 +764,28 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       # Thus, we must initialize the label with a placeholder, then
       # set it to the proper value afterwards.
       @circle = new fabric.Circle conf
-      @label = new Text '----------', left, top,
-        fontSize: SIZE / 4
-        fill: '#44d'
+      @label = {}
+      # @label = new Text '----------', left, top,
+      #   fontSize: SIZE / 4
+      #   fill: '#44d'
 
       @radius = @circle.radius
       @left = @circle.left
       @top = @circle.top
 
       mdp.canvas.add(@circle)
-      mdp.canvas.add(@label)
       
-      @setLabel conf.label
+      # @setLabel conf.label
       unless mdp.showParticipant
         @circle.on('mousedown', => mdp.clickState this, @name)
         @circle.on('mouseover', => mdp.mouseoverState this, @name)
         @circle.on('mouseout', => mdp.mouseoutState this, @name)
 
     setLabel: (txt, conf={}) ->
+      @label = new Text '----------', @left, @top,
+        fontSize: SIZE / 4
+        fill: '#44d'
+      mdp.canvas.add(@label)
       LOG_DEBUG 'setLabel', txt
       {
         pre=''
@@ -710,6 +798,11 @@ jsPsych.plugins['mouselab-mdp'] = do ->
       else
         @label.setText ''
       @dirty = true
+
+    higlight: ->
+      @circle.set('color', '#49f')
+
+
 
 
   class Edge
