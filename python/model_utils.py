@@ -79,7 +79,7 @@ def fetch_data(exp, version=None):
         sdf = exp_data['survey-multi-choice'].set_index('pid').loc[complete]
         responses = pd.DataFrame(list(sdf.responses), index=sdf.index)
         grp = responses.groupby(lambda pid: pdf.variance[pid])
-        correct = grp.apply(lambda x: x.mode().iloc[0])  # assume the most common answer is corrct
+        correct = grp.apply(lambda x: x.mode().iloc[0])  # assume the most common answer is correct
         errors = correct.loc[pdf.variance].set_index(pdf.index) != responses
         fail_quiz = errors.sum(1) > 1
         no_click = mdf.query('block == "train_inspector"').groupby('pid').n_clicks.sum() == 0
@@ -87,7 +87,7 @@ def fetch_data(exp, version=None):
 
     pdf['excluded'] = excluded_pids()
     tdf = tdf.loc[~pdf.excluded]
-    print(f'Excluding {exclude.sum()} out of {len(exclude)} partipicants')
+    print(f'Excluding {pdf.excluded.sum()} out of {len(pdf)} partipicants')
 
     def get_env(state_rewards):
         state_rewards[0] = 0
@@ -95,11 +95,11 @@ def fetch_data(exp, version=None):
     tdf['env'] = tdf.state_rewards.apply(get_env)
 
     def unroll(df):
-        for i, row in df.iterrows():
+        for pid, row in df.iterrows():
             env = row.env
             env.reset()
             for a in [*row.clicks, env.term_action]:
-                yield {'pid': row.pid, 'trial_index': row.trial_index, 'trial_id': row.trial_id,
+                yield {'pid': pid, 'trial_index': row.trial_index, 'trial_id': row.trial_id,
                        'state': env._state, 'action': a}
                 env.step(a)
     return {
