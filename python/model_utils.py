@@ -5,6 +5,12 @@ import numpy as np
 from exact import solve
 from analysis_utils import *
 
+SCALING = {
+    'increasing': [1/2, 1, 6],
+    'decreasing': [6, 1, 1/2],
+    'constant': [1, 1, 1]
+}
+
 def make_env(mu, sigma, cost=1.00, scaling_factors=[1,1,1], branching=[3,1,2], seed=None, **kwargs):
     """Returns an environment with structure similar to those used in the experiment."""
     if seed is not None:
@@ -19,14 +25,14 @@ def make_env(mu, sigma, cost=1.00, scaling_factors=[1,1,1], branching=[3,1,2], s
 
     return MouselabEnv.new_symmetric(branching, reward, cost=cost, **kwargs)
 
-def make_exp_env(exp, **kwargs):
-    if exp == 1:
-        return make_env(0, 5, **kwargs)
-    elif exp == 2:
-        assert 0
-        # return make_env()
-    else:
-        raise ValueError('exp must be 1 or 2.')
+# def make_exp_env(exp, **kwargs):
+#     if exp == 1:
+#         return make_env(0, 5, **kwargs)
+#     elif exp == 2:
+#         assert 0
+#         return make_env(0, 4, **kwargs)
+#     else:
+#         raise ValueError('exp must be 1 or 2.')
         
 
 
@@ -52,7 +58,9 @@ def fetch_data(exp, version=None):
     pdf = exp_data['participants'].set_index('pid')
     complete = pdf.completed
     pdf = pdf.loc[complete]
-    if 'variance' not in pdf:
+    if 'variance' in pdf:
+        pdf.variance = pdf.variance.replace(2442, 'decreasing').replace(2424, 'increasing')
+    else:
         pdf['variance'] = 'constant'
 
     mdf = exp_data['mouselab-mdp'].set_index('pid').loc[complete]
@@ -63,6 +71,7 @@ def fetch_data(exp, version=None):
     mdf['clicks'] = mdf.queries.apply(extract)
     mdf['n_clicks'] = mdf.clicks.apply(len)
     mdf['thinking'] = mdf['rt'].apply(get(0, default=0))
+    mdf['variance'] = pdf.variance
 
     tdf = mdf.query('block == "test"').copy()
     tdf.trial_index -= tdf.trial_index.min()
@@ -89,10 +98,14 @@ def fetch_data(exp, version=None):
     tdf = tdf.loc[~pdf.excluded]
     print(f'Excluding {pdf.excluded.sum()} out of {len(pdf)} partipicants')
 
-    def get_env(state_rewards):
-        state_rewards[0] = 0
-        return make_exp_env(exp, ground_truth=state_rewards)
-    tdf['env'] = tdf.state_rewards.apply(get_env)
+    def get_env(row):
+        row.state_rewards[0] = 0
+        sigma = 5 if row.variance == 'constant' else 4
+
+        return make_env(0, sigma,
+                        scaling_factors=SCALING[row.variance],
+                        ground_truth=row.state_rewards)
+    tdf['env'] = tdf.apply(get_env)
 
     def unroll(df):
         for pid, row in df.iterrows():
