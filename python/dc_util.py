@@ -102,6 +102,58 @@ def get_all_options_old(env):
 
     return options, option_utils, path_nodes, path_stds, path_obs, avail_moves
 
+def get_all_options(env):
+    paths = env.paths #list of all paths
+    avail_moves = [0,]*len(paths) #list of moves available in each path
+    path_obs = [] #value of observed nodes in each path
+    path_nodes = [] #the unobserved nodes of each path
+    path_stds = [] #the std deviation of the unobserved nodes of each path
+    
+    options = [] #list of all options
+    option_utils = [] #list of the utility of each option
+    option_insts = dict() #list of all possible option instantiations
+    
+    for i in range(len(paths)):
+        stds = []
+        nodes = []
+        obs = 0
+        
+        for node in paths[i]:
+            if hasattr(env._state[node],'sample'):
+                stds.append(env._state[node].var())
+                nodes.append(node)
+                avail_moves[i] += 1
+            else:
+                obs += env._state[node]
+                
+        path_obs.append(obs)
+        path_stds.append(stds)
+        path_nodes.append(nodes)
+        
+        for j in range(avail_moves[i]):
+            options.append((i,j+1))
+    max_obs = np.max(path_obs)
+    
+    for option in options:
+        path, obs = option
+        option_utils.append(option_util(path_obs[path]-max_obs,np.sqrt(np.sum(np.sort(path_stds[path])[::-1][:obs]))) + obs*env.cost)
+        option_insts[option] = all_option_insts(path_nodes[path],path_stds[path],obs)
+        
+    #single click options
+    sc_opt = (-1,1)
+    options.append(sc_opt)
+    option_utils.append(-np.inf)
+    option_insts[sc_opt] = [[a] for a in env.actions(env._state)]
+    n_available_clicks = len(option_insts[sc_opt])
+
+    #end click options
+    end_opt = (-99,1)
+    options.append(end_opt)
+    option_utils.append(0)
+    option_insts[end_opt] = [[env.term_action]]
+    
+    return options, option_insts, np.array(option_utils),n_available_clicks
+
 def pick_option_moves(env):
     options, option_utils, path_nodes, path_stds, path_obs, avail_moves = get_all_options_old(env)
 
