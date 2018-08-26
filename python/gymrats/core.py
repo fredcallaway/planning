@@ -12,8 +12,7 @@ from tqdm import tqdm, trange, tnrange
 from copy import deepcopy
 from toolz.curried import *
 
-# from policies import *
-# from value_functions import *
+
 # ========================== #
 # ========= Agents ========= #
 # ========================== #
@@ -22,13 +21,15 @@ class RegistrationError(Exception): pass
 
 class Agent(ABC):
     """An agent that can run openai gym environments."""
-    def __init__(self):
+    def __init__(self, *components):
         self.env = None
         self.policy = None
         self.ep_trace = None
-        self.value_functions = []
+        self.components = []
         self.i_episode = 0
         self.memory = None
+        for comp in components:
+            self.register(comp)
 
     def register(self, obj):
         """Attaches a component or env to this agent."""
@@ -37,13 +38,12 @@ class Agent(ABC):
         elif hasattr(obj, 'act'):
             self.policy = obj
             obj.attach(self)
-        elif hasattr(obj, 'predict'):
-            self.value_functions.append(obj)
-            obj.attach(self)
         elif hasattr(obj, 'batch'):
             self.memory = obj
         else:
-            raise ValueError('Cannot register {}'.format(obj))
+            self.components.append(obj)
+            obj.attach(self)
+            # raise ValueError('Cannot register {}'.format(obj))
 
     def run_episode(self, render=False, max_steps=1000, interact=False,
                     verbose=False, reset=True):
@@ -62,7 +62,7 @@ class Agent(ABC):
                     'actions': [],
                     'rewards': [],
                     'finished': False,
-                    'return': None
+                    'return_': None
                 })
         if reset:
             new_state = self.env.reset()
@@ -90,7 +90,7 @@ class Agent(ABC):
 
 
         trace['states'].append(new_state)  # final state
-        trace['return'] = sum(trace['rewards'])
+        trace['return_'] = sum(trace['rewards'])
         if self.memory is not None:
             self.memory.add(trace)
         self._finish_episode(trace)
@@ -116,19 +116,19 @@ class Agent(ABC):
 
     def _start_episode(self, state):
         self.policy.start_episode(state)
-        for vf in self.value_functions:
-            vf.start_episode(state)
+        for comp in self.components:
+            comp.start_episode(state)
 
     def _finish_episode(self, trace):
         self.policy.finish_episode(trace)
-        for vf in self.value_functions:
-            vf.finish_episode(trace)
+        for comp in self.components:
+            comp.finish_episode(trace)
         
 
     def _experience(self, s0, a, s1, r, done):
         self.policy.experience(s0, a, s1, r, done)
-        for vf in self.value_functions:
-            vf.experience(s0, a, s1, r, done)
+        for comp in self.components:
+            comp.experience(s0, a, s1, r, done)
 
     def _render(self, mode):
         if mode == 'step':
@@ -168,7 +168,10 @@ class Component(ABC):
         pass
 
     def start_episode(self, state):
-        """This function is run when an episode begins, starting at state."""
+        """This function is run when an episode begins, starting at state.
+
+        This can be used to e.g. to initialize episode-specific memory as necessary
+        for n-step TD learning."""
         pass
 
     def finish_episode(self, trace):
@@ -218,12 +221,14 @@ class Component(ABC):
 class Memory(object):
     """Remembers past experiences."""
     def __init__(self, size=100000):
+        # self.experiences = deque(maxlen=size)
         self.states = deque(maxlen=size)
         self.actions = deque(maxlen=size)
         self.rewards = deque(maxlen=size)
         self.returns = deque(maxlen=size)
 
     def add(self, trace):
+        # TODO this wastes RAM
         self.states.extend(trace['states'])
         self.actions.extend(trace['actions'])
         self.actions.append(None)
@@ -276,16 +281,6 @@ class Memory(object):
 #             return
 #         for _ in range(n):
 #             yield np.random.choice(self.deque, size, replace=False)
-
-
-def run_episode(policy, env):
-    agent = Agent()
-    agent.register(env)
-    agent.register(policy)
-    return agent.run_episode()
-
-def interactions(x):
-    return [a * b for a, b in it.combinations(x, 2)]
 
 
 
