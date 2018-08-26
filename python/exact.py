@@ -23,7 +23,23 @@ def hash_312(state):
       )
     )
 
-def solve(env, cache=None, hash_state=hash_312):
+def hash_tree(env, state):
+    """Breaks symmetry between belief states.
+    
+    This is done by enforcing that the knowldge about states at each
+    depth be sorted by [0, 1, UNKNOWN]
+    """
+    if state == '__term_state__':
+        return hash(state)
+    def rec(n):
+        x = hash(state.belief[n])
+        childs =  sum(rec(c) for c in env.tree[n])
+        return hash(str(x + childs))
+
+    return state.last_click + rec(0)
+
+
+def solve(env, cache=None, hash_state=hash_tree):
     """Returns Q, V, pi, and computation data for an mdp environment."""
 
     info = {  # track number of times each function is called
@@ -36,7 +52,7 @@ def solve(env, cache=None, hash_state=hash_312):
             if state is None:
                 return state
             else:
-                return hash_state(state)
+                return hash_state(env, state)
     else:
         hash_key = None
 

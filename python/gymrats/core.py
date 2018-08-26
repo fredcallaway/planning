@@ -1,21 +1,25 @@
 """Agents that operate in discrete fully observable environments."""
 
-from collections import namedtuple, defaultdict, Counter, deque
-import itertools as it
+from collections import defaultdict, deque
 import numpy as np
-from abc import ABC, abstractmethod
-from utils import clear_screen, PriorityQueue
+from abc import ABC
+from utils import clear_screen
 import time
 np.set_printoptions(precision=3, linewidth=200)
 
-from tqdm import tqdm, trange, tnrange
+from tqdm import tnrange
 from copy import deepcopy
-from toolz.curried import *
 
 
 # ========================== #
 # ========= Agents ========= #
 # ========================== #
+
+def run_episode(policy, env):
+    agent = Agent()
+    agent.register(env)
+    agent.register(policy)
+    return agent.run_episode()
 
 class RegistrationError(Exception): pass
 

@@ -1,5 +1,6 @@
 from IPython.display import clear_output
 import itertools as it
+import numpy as np
 
 def join(*args, sep=' '):
     return sep.join(map(str, args))
@@ -69,8 +70,8 @@ class PriorityQueue(object):
         else:
             return vals
 
-def softmax(x):
-    ex = np.exp(x)
+def softmax(x, temp=1):
+    ex = np.exp((x - x.max()) / temp)
     return ex / ex.sum()
 
 
