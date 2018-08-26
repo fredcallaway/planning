@@ -208,42 +208,44 @@ def get_rtable(results, p_col=None):
     return tbl
 
 # ---------- Plotting ---------- #
+try:
+    import matplotlib
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    sns.set_style('white')
+    sns.set_context('notebook', font_scale=1.4)
+    sns.set_palette('deep', color_codes=True)
 
-import matplotlib
-import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set_style('white')
-sns.set_context('notebook', font_scale=1.4)
-sns.set_palette('deep', color_codes=True)
-
-class Figures(object):
-    """Plots and saves figures."""
-    def __init__(self, path='figs/', formats=['eps']):
-        self.path = path
-        self.formats = formats
-        os.makedirs(path, exist_ok=True)
+    class Figures(object):
+        """Plots and saves figures."""
+        def __init__(self, path='figs/', formats=['eps']):
+            self.path = path
+            self.formats = formats
+            os.makedirs(path, exist_ok=True)
 
 
-    def savefig(self, name):
-        name = name.lower()
-        for fmt in self.formats:
-            path = os.path.join(self.path, name + '.' + fmt)
-            print(path)
-            plt.savefig(path, bbox_inches='tight')
-    
-    def plot(self, **kwargs1):
-        """Decorator that calls a plotting function and saves the result."""
-        def decorator(func):        
-            def wrapped(*args, **kwargs):
-                kwargs.update(kwargs1)
-                params = [v for v in kwargs1.values() if v is not None]
-                param_str = '_' + str_join(params).rstrip('_') if params else ''
-                name = func.__name__ + param_str
-                if name.startswith('plot_'):
-                    name = name[len('plot_'):]
-                func(*args, **kwargs)
-                self.savefig(name)
-            wrapped()
-            return wrapped
+        def savefig(self, name):
+            name = name.lower()
+            for fmt in self.formats:
+                path = os.path.join(self.path, name + '.' + fmt)
+                print(path)
+                plt.savefig(path, bbox_inches='tight')
         
-        return decorator
+        def plot(self, **kwargs1):
+            """Decorator that calls a plotting function and saves the result."""
+            def decorator(func):        
+                def wrapped(*args, **kwargs):
+                    kwargs.update(kwargs1)
+                    params = [v for v in kwargs1.values() if v is not None]
+                    param_str = '_' + str_join(params).rstrip('_') if params else ''
+                    name = func.__name__ + param_str
+                    if name.startswith('plot_'):
+                        name = name[len('plot_'):]
+                    func(*args, **kwargs)
+                    self.savefig(name)
+                wrapped()
+                return wrapped
+            
+            return decorator
+except:
+    pass
