@@ -5,7 +5,6 @@ from gym import spaces
 from distributions import smax, cmax, sample, expectation, Normal, PointMass
 from toolz import memoize, get
 import random
-from contracts import contract
 
 
 NO_CACHE = False
@@ -46,7 +45,7 @@ class MouselabEnv(gym.Env):
 
         # Required for gym.Env API.
         self.action_space = spaces.Discrete(len(self.init) + 1)
-        self.observation_space = spaces.Box(-np.inf, np.inf, shape=len(self.init))
+        self.observation_space = spaces.Box(-np.inf, np.inf, shape=(len(self.init),))
 
         self.initial_states = None  # TODO
         self.exact = True  # TODO
@@ -197,28 +196,24 @@ class MouselabEnv(gym.Env):
         return self.node_value_to(node, state) + self.node_value(node, state)
 
     # @lru_cache(CACHE_SIZE)
-    @contract
     def myopic_voc(self, action, state) -> 'float, >= -0.001':
         return (self.node_value_after_observe((action,), 0, state).expectation()
                 - self.expected_term_reward(state)
                 )
 
     # @lru_cache(CACHE_SIZE)
-    @contract
     def vpi_branch(self, action, state) -> 'float, >= -0.001':
         obs = self._relevant_subtree(action)
         return (self.node_value_after_observe(obs, 0, state).expectation()
                 - self.expected_term_reward(state)
                 )
     
-    @contract
     def vpi_action(self, action, state) -> 'float, >= -0.001':
         obs = (*self.subtree[action][1:], *self.path_to(action)[1:])
         return (self.node_value_after_observe(obs, 0, state).expectation()
                 - self.expected_term_reward(state)
                 )
 
-    @contract
     def vpi(self, state) -> 'float, >= -0.001':
         obs = self.subtree[0]
         return (self.node_value_after_observe(obs, 0, state).expectation()
@@ -296,10 +291,13 @@ class MouselabEnv(gym.Env):
     @memoize
     def path_to(self, node, start=0):
         path = [start]
+        child = None
         if node == start:
             return path
-        for _ in range(10000):
+        for _ in range(100):
             children = self.tree[path[-1]]
+            if not children:
+                return False
             for i, child in enumerate(children):
                 if child == node:
                     path.append(node)
@@ -309,7 +307,7 @@ class MouselabEnv(gym.Env):
                     break
             else:
                 path.append(child)
-        assert False
+        return False
 
     @memoize
     def all_paths(self, start=0):
@@ -364,7 +362,7 @@ class MouselabEnv(gym.Env):
         expand(0)
         return cls(tree, init, **kwargs)
 
-    def _render(self, mode='notebook', close=False):
+    def render(self, mode='notebook', close=False, node_attrs={}):
         if close:
             return
         from graphviz import Digraph
@@ -377,14 +375,18 @@ class MouselabEnv(gym.Env):
                 return '#F7BDC4'
         
         dot = Digraph()
-        for x, ys in enumerate(self.tree):
-            r = self._state[x]
-            observed = not hasattr(self._state[x], 'sample')
-            c = color(r) if observed else 'grey'
-            l = str(round(r, 2)) if observed else str(x)
-            dot.node(str(x), label=l, style='filled', color=c)
-            for y in ys:
-                dot.edge(str(x), str(y))
+        for node, children in enumerate(self.tree):
+            value = self._state[node]
+            observed = not hasattr(self._state[node], 'sample')
+            attrs = {
+                'color': color(value) if observed else 'grey',
+                'label': str(round(value, 2)) if observed else str(node),
+                'style': 'filled',
+            }
+            attrs.update(node_attrs.get(node, {}))
+            dot.node(str(node), **attrs)
+            for child in children:
+                dot.edge(str(node), str(child))
         return dot
 
 
