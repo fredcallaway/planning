@@ -46,7 +46,7 @@ class MouselabEnv(gym.Env):
 
         self.sample_term_reward = False
         self.action_space = spaces.Discrete(len(self.tree) + 1)
-        self.observation_space = spaces.Box(-np.inf, np.inf, shape=len(self.tree))
+        self.observation_space = spaces.Box(-np.inf, np.inf, shape=(len(self.tree),))
         self.subtree = self._get_subtree()
         self.subtree_slices = self._get_subtree_slices()
         self.term_action = len(self.tree)
@@ -55,6 +55,9 @@ class MouselabEnv(gym.Env):
     def reset(self):
         self._state = self.init
         return self.features(self._state)
+        
+    def step(self,action):
+        return self._step(action)
 
     def _step(self, action):
         if self._state is self.term_state:
