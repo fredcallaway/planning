@@ -7,7 +7,7 @@ from utils import clear_screen
 import time
 np.set_printoptions(precision=3, linewidth=200)
 
-from tqdm import tnrange
+from tqdm import trange
 from copy import deepcopy
 
 
@@ -82,7 +82,7 @@ class Agent(ABC):
             action = self.policy.act(state)
             new_state, reward, done, info = self.env.step(action)
             self._experience(state, action, new_state, reward, done)
-            
+
             trace['states'].append(state)
             trace['actions'].append(action)
             trace['rewards'].append(reward)
@@ -104,7 +104,7 @@ class Agent(ABC):
     def run_many(self, n_episodes, pbar=True, track=(), **kwargs):
         """Runs several episodes, returns a summary of results."""
         data = defaultdict(list)
-        range_ = tnrange if pbar else range
+        range_ = trange if pbar else range
         for _ in range_(n_episodes):
             trace = self.run_episode(**kwargs)
             data['n_steps'].append(len(trace.pop('states')))
@@ -127,7 +127,7 @@ class Agent(ABC):
         self.policy.finish_episode(trace)
         for comp in self.components:
             comp.finish_episode(trace)
-        
+
 
     def _experience(self, s0, a, s1, r, done):
         self.policy.experience(s0, a, s1, r, done)
@@ -206,7 +206,7 @@ class Component(ABC):
     @property
     def n_action(self):
         return self.env.action_space.n
-    
+
     @property
     def memory(self):
         return self.agent.memory
@@ -292,7 +292,7 @@ class Model(object):
     """Simulated environment"""
     def __init__(self, env):
         self.env = deepcopy(env)
-      
+
     def options(self, state):
         for a in range(self.env.action_space.n):
             self.env._state = state
